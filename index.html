@@ -1,179 +1,688 @@
-<!DOCTYPE html>
-<html lang="tr" class="scroll-smooth">
+A<!DOCTYPE html>
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baydoğan Ailesi | Aile Hikayemiz</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/smiling-face.png">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome İkonları -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .card-shadow { box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baydoğan Ailesi</title>
+<meta name="description" content="Baydoğan Ailesi — anılar, albümler ve aile hikayemiz.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='31' fill='%23F7F1E6' stroke='%23C9962C' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='25' fill='%237C2D3F'/%3E%3Cpath d='M32 16 L48 28 V48 H38 V36 H26 V48 H16 V28 Z' fill='%23F7F1E6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#23222B;
+    --ink-soft:#4A4854;
+    --paper:#F7F1E6;
+    --paper-deep:#EFE6D4;
+    --wine:#7C2D3F;
+    --wine-deep:#5C2130;
+    --navy:#2C3E55;
+    --forest:#3F6B52;
+    --gold:#C9962C;
+    --rose:#C97B84;
+    --line:rgba(35,34,43,0.12);
+    --shadow:0 18px 40px rgba(35,34,43,0.14);
+    --shadow-soft:0 8px 22px rgba(35,34,43,0.08);
+    --radius-lg:28px;
+    --radius-md:18px;
+    --radius-sm:12px;
+    --ff-display:'Fraunces', serif;
+    --ff-body:'Manrope', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--ff-body);
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 1px 1px, rgba(35,34,43,0.05) 1px, transparent 0) 0 0/22px 22px,
+      var(--paper);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--gold); color:var(--ink); }
+  a{ color:inherit; }
+  img{ max-width:100%; display:block; }
+  .eyebrow{
+    font-family:var(--ff-body); font-weight:700; font-size:12.5px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--wine);
+  }
+  h1,h2,h3{ font-family:var(--ff-display); font-weight:600; margin:0; color:var(--ink); }
+  .container{ width:100%; max-width:1180px; margin:0 auto; padding:0 28px; }
+  @media (max-width:700px){ .container{ padding:0 20px; } }
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:fixed; top:0; left:0; right:0; z-index:500;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px; backdrop-filter:blur(10px);
+    background:rgba(247,241,230,0.82);
+    border-bottom:1px solid transparent;
+    transition:border-color .35s ease, box-shadow .35s ease, padding .35s ease;
+  }
+  .nav.scrolled{ border-color:var(--line); box-shadow:0 6px 20px rgba(35,34,43,0.06); padding:10px 32px; }
+  .nav-brand{ display:flex; align-items:center; gap:12px; text-decoration:none; }
+  .nav-brand svg{ width:40px; height:40px; transition:transform .4s ease; }
+  .nav-brand:hover svg{ transform:rotate(-8deg) scale(1.06); }
+  .nav-word{ font-family:var(--ff-display); font-weight:600; font-size:20px; letter-spacing:.01em; }
+  .nav-links{ display:flex; align-items:center; gap:36px; list-style:none; margin:0; padding:0; }
+  .nav-links a{
+    text-decoration:none; font-weight:600; font-size:14.5px; color:var(--ink-soft);
+    position:relative; padding:4px 0;
+  }
+  .nav-links a::after{
+    content:''; position:absolute; left:50%; bottom:-2px; width:0; height:2px;
+    background:var(--wine); transition:width .3s ease, left .3s ease;
+  }
+  .nav-links a:hover{ color:var(--ink); }
+  .nav-links a:hover::after{ width:100%; left:0; }
+  .nav-burger{ display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:6px; }
+  .nav-burger span{ width:24px; height:2.5px; background:var(--ink); border-radius:2px; transition:.3s; }
+  @media (max-width:840px){
+    .nav-links{
+      position:fixed; top:64px; left:0; right:0; flex-direction:column; align-items:flex-start;
+      background:var(--paper); padding:24px 32px 32px; gap:20px; border-bottom:1px solid var(--line);
+      transform:translateY(-140%); opacity:0; transition:transform .35s ease, opacity .3s ease; box-shadow:var(--shadow-soft);
+    }
+    .nav-links.open{ transform:translateY(0); opacity:1; }
+    .nav-burger{ display:flex; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; padding:168px 0 120px; overflow:hidden;
+  }
+  .hero-deco{
+    position:absolute; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(560px circle at 88% 8%, rgba(201,150,44,0.16), transparent 60%),
+      radial-gradient(500px circle at 6% 90%, rgba(124,45,63,0.10), transparent 60%);
+  }
+  .hero-inner{ position:relative; z-index:1; display:grid; grid-template-columns:1fr; gap:44px; }
+  .hero-eyebrow{ display:flex; align-items:center; gap:14px; opacity:0; animation:riseIn .8s .1s ease forwards; }
+  .hero-eyebrow .rule{ width:40px; height:1.5px; background:var(--wine); }
+  .hero h1{
+    font-size:clamp(40px,6.4vw,80px); line-height:1.03; margin-top:18px; letter-spacing:-0.01em;
+    opacity:0; animation:riseIn .9s .22s ease forwards;
+  }
+  .hero h1 em{ font-style:italic; color:var(--wine); font-weight:500; }
+  .hero-sub{
+    font-size:18px; line-height:1.7; color:var(--ink-soft); max-width:560px; margin-top:22px;
+    opacity:0; animation:riseIn .9s .34s ease forwards;
+  }
+  .hero-cta-row{ display:flex; gap:16px; margin-top:34px; flex-wrap:wrap; opacity:0; animation:riseIn .9s .46s ease forwards; }
+  @keyframes riseIn{ from{ opacity:0; transform:translateY(22px); } to{ opacity:1; transform:translateY(0); } }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:10px; padding:14px 26px; border-radius:999px;
+    font-family:var(--ff-body); font-weight:700; font-size:14.5px; text-decoration:none;
+    border:1.5px solid transparent; cursor:pointer; transition:transform .25s ease, box-shadow .25s ease, background .25s ease;
+  }
+  .btn-primary{ background:var(--wine); color:var(--paper); box-shadow:0 10px 24px rgba(124,45,63,0.28); }
+  .btn-primary:hover{ background:var(--wine-deep); transform:translateY(-2px); box-shadow:0 14px 30px rgba(124,45,63,0.34); }
+  .btn-ghost{ background:transparent; color:var(--ink); border-color:var(--line); }
+  .btn-ghost:hover{ border-color:var(--ink); transform:translateY(-2px); }
+
+  /* big family portrait card */
+  .family-card{
+    position:relative; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow);
+    aspect-ratio:16/8; border:1px solid var(--line);
+    background:
+      linear-gradient(160deg, var(--navy) 0%, var(--wine-deep) 55%, var(--ink) 100%);
+    display:flex; align-items:flex-end;
+    opacity:0; animation:cardIn 1s .35s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  /* min-height yalnızca geniş ekranlarda uygulanır — aspect-ratio ile min-height birlikte
+     kullanıldığında oran korunmaya çalışılırken kart, dar (mobil) ekranlarda konteynerinden
+     taşıyordu. / min-height only applies on wide screens — combining it with aspect-ratio was
+     forcing the card to overflow its container on narrow (mobile) screens while preserving ratio. */
+  @media (min-width:701px){ .family-card{ min-height:340px; } }
+  @media (max-width:700px){ .family-card{ aspect-ratio:4/5; } }
+  @keyframes cardIn{ from{ opacity:0; transform:translateY(34px) scale(.985); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  .family-card::before{
+    content:''; position:absolute; inset:0;
+    background-image:
+      radial-gradient(2px 2px at 12% 20%, rgba(255,255,255,.10) 0, transparent 60%),
+      radial-gradient(2px 2px at 82% 32%, rgba(255,255,255,.08) 0, transparent 60%),
+      radial-gradient(2px 2px at 60% 78%, rgba(255,255,255,.09) 0, transparent 60%);
+  }
+  .family-card img.uploaded{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .family-card-scrim{
+    position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,16,20,0.72) 0%, rgba(20,16,20,0.08) 55%, transparent 80%);
+  }
+  .family-card-content{ position:relative; z-index:2; padding:34px 38px; color:#fff; width:100%; }
+  .family-card-crest-row{ display:flex; gap:10px; margin-bottom:14px; }
+  .mini-seal{
+    width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:var(--ff-display); font-weight:600; font-size:14px; color:#fff;
+    border:1.5px solid rgba(255,255,255,0.55); transition:transform .3s ease;
+  }
+  .mini-seal:hover{ transform:translateY(-4px) scale(1.08); }
+  .family-card-title{ font-family:var(--ff-display); font-size:clamp(24px,3.2vw,34px); font-weight:600; margin:0 0 6px; }
+  .family-card-sub{ font-size:14.5px; opacity:.85; font-weight:500; }
+
+  .hero-upload{
+    position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; color:#fff; cursor:pointer; text-align:center;
+    opacity:0; transition:opacity .3s ease; background:rgba(20,16,20,0.35);
+  }
+  .family-card.empty .hero-upload{ opacity:1; }
+  .family-card:not(.empty) .hero-upload{ pointer-events:none; }
+  .family-card:not(.empty):hover .hero-upload{ opacity:1; pointer-events:auto; background:rgba(20,16,20,0.55); }
+  .hero-upload svg{ width:34px; height:34px; opacity:.9; }
+  .hero-upload span{ font-size:13.5px; font-weight:700; letter-spacing:.03em; max-width:220px; }
+  .hero-upload input{ display:none; }
+
+  /* ---------- section shells ---------- */
+  section{ position:relative; padding:96px 0; }
+  .section-head{ max-width:640px; margin-bottom:56px; }
+  .section-head .eyebrow{ display:block; margin-bottom:14px; }
+  .section-head h2{ font-size:clamp(30px,4vw,44px); line-height:1.12; }
+  .section-head p{ margin-top:16px; font-size:16.5px; line-height:1.75; color:var(--ink-soft); }
+
+  .divider-scallop{
+    width:100%; height:26px; display:block;
+    background-image:radial-gradient(circle at 13px 0, transparent 12px, var(--paper) 13px);
+    background-size:26px 26px; background-repeat:repeat-x;
+  }
+
+  /* ---------- INTRO ---------- */
+  .intro{ padding-top:64px; }
+  .intro-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:64px; align-items:start; }
+  @media (max-width:900px){ .intro-grid{ grid-template-columns:1fr; gap:40px; } }
+  .intro-text p{ font-size:17.5px; line-height:1.85; color:var(--ink-soft); margin:0 0 18px; }
+  .intro-text p:first-of-type::first-letter{
+    font-family:var(--ff-display); font-size:56px; font-weight:600; color:var(--wine);
+    float:left; line-height:1; margin:2px 8px 0 0;
+  }
+  .quick-chips{
+    display:flex; flex-wrap:wrap; gap:12px; padding:26px; background:#fff; border:1px solid var(--line);
+    border-radius:var(--radius-md); box-shadow:var(--shadow-soft);
+  }
+  .quick-chips h3{ width:100%; font-size:14px; font-family:var(--ff-body); font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .chip{
+    display:flex; align-items:center; gap:10px; padding:9px 16px 9px 9px; border-radius:999px;
+    background:var(--paper); text-decoration:none; color:var(--ink); font-weight:700; font-size:13.5px;
+    border:1px solid var(--line); transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .chip:hover{ transform:translateY(-3px); box-shadow:var(--shadow-soft); border-color:transparent; }
+  .chip .seal{ width:26px; height:26px; font-size:12px; }
+
+  /* ---------- SEAL / crest badge shared ---------- */
+  .seal{
+    border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-family:var(--ff-display); font-weight:600; color:#fff; position:relative;
+  }
+  .seal::after{
+    content:''; position:absolute; inset:-4px; border-radius:50%; border:1px solid currentColor; opacity:.35;
+  }
+
+  /* ---------- FAMILY GRID ---------- */
+  .family-grid{ background:var(--paper-deep); }
+  .cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:26px; }
+  .member-card{
+    background:#fff; border-radius:var(--radius-md); padding:30px 26px; border:1px solid var(--line);
+    box-shadow:var(--shadow-soft); position:relative; overflow:hidden;
+    opacity:0; transform:translateY(26px); transition:transform .55s cubic-bezier(.16,1,.3,1), box-shadow .35s ease, opacity .55s ease;
+  }
+  .member-card.in-view{ opacity:1; transform:translateY(0); }
+  .member-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:5px; background:var(--accent, var(--wine));
+  }
+  .member-card:hover{ transform:translateY(-8px); box-shadow:var(--shadow); }
+  .member-photo{
+    width:96px; height:96px; border-radius:50%; margin-bottom:18px; position:relative;
+    background:var(--accent-tint, #EFE6D4); display:flex; align-items:center; justify-content:center;
+    overflow:hidden; border:3px solid #fff; box-shadow:0 0 0 2px var(--accent, var(--wine));
+    cursor:pointer;
+  }
+  .member-photo img{ width:100%; height:100%; object-fit:cover; }
+  .member-photo .seal{ width:100%; height:100%; background:var(--accent, var(--wine)); font-size:30px; }
+  .member-photo .seal::after{ display:none; }
+  .member-photo .photo-hint{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(35,34,43,0.55);
+    color:#fff; opacity:0; transition:opacity .25s ease; font-size:10.5px; font-weight:700; text-align:center; padding:6px;
+  }
+  .member-photo:hover .photo-hint{ opacity:1; }
+  .member-photo input{ display:none; }
+  .member-role{
+    display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent, var(--wine)); margin-bottom:6px;
+  }
+  .member-card h3{ font-size:24px; margin-bottom:8px; }
+  .member-card p{ font-size:14.5px; line-height:1.65; color:var(--ink-soft); margin:0 0 18px; }
+  .member-link{
+    display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:13.5px; text-decoration:none;
+    color:var(--ink); border-bottom:1.5px solid var(--accent, var(--wine)); padding-bottom:2px;
+  }
+  .member-link svg{ width:14px; height:14px; transition:transform .25s ease; }
+  .member-link:hover svg{ transform:translateX(4px); }
+
+  /* ---------- ALBUMS ---------- */
+  .albums{ background:var(--paper); }
+  .album-block{
+    padding:52px 0; border-top:1px solid var(--line);
+    opacity:0; transform:translateY(20px); transition:opacity .6s ease, transform .6s ease;
+  }
+  .album-block.in-view{ opacity:1; transform:translateY(0); }
+  .album-block:first-of-type{ border-top:none; }
+  .album-head{ display:flex; align-items:center; gap:18px; margin-bottom:26px; flex-wrap:wrap; }
+  .album-head .seal{ width:52px; height:52px; font-size:20px; }
+  .album-head h3{ font-size:26px; }
+  .album-head .count{ font-size:13px; font-weight:700; color:var(--ink-soft); background:#fff; border:1px solid var(--line); padding:5px 12px; border-radius:999px; }
+
+  .dropzone{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    border:1.5px dashed var(--line); border-radius:var(--radius-md); padding:22px; text-align:center;
+    background:#fff; cursor:pointer; transition:border-color .25s ease, background .25s ease; margin-bottom:20px;
+  }
+  .dropzone.drag{ border-color:var(--accent, var(--wine)); background:var(--accent-tint,#fff); }
+  .dropzone svg{ width:26px; height:26px; color:var(--accent, var(--wine)); margin-bottom:6px; }
+  .dropzone p{ margin:0; font-size:13.5px; font-weight:700; color:var(--ink); }
+  .dropzone span{ font-size:12px; color:var(--ink-soft); }
+  .dropzone input{ display:none; }
+
+  .photo-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;
+  }
+  .photo-grid .frame{
+    aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; position:relative;
+    box-shadow:var(--shadow-soft); border:1px solid var(--line);
+  }
+  .photo-grid .frame img{ width:100%; height:100%; object-fit:cover; transition:transform .5s ease; }
+  .photo-grid .frame:hover img{ transform:scale(1.08); }
+  .photo-grid .frame .remove{
+    position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%; border:none;
+    background:rgba(20,16,20,0.6); color:#fff; font-size:14px; cursor:pointer; opacity:0; transition:opacity .2s ease;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .photo-grid .frame:hover .remove{ opacity:1; }
+  .photo-grid .placeholder-frame{
+    display:flex; align-items:center; justify-content:center; background:var(--accent-tint,#F0EAE0);
+    color:var(--accent, var(--wine)); opacity:.55;
+  }
+  .photo-grid .placeholder-frame svg{ width:22px; height:22px; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--ink); color:rgba(247,241,230,0.72); padding:64px 0 30px; margin-top:20px;
+  }
+  .footer-top{ display:flex; justify-content:space-between; gap:48px; flex-wrap:wrap; padding-bottom:44px; border-bottom:1px solid rgba(247,241,230,0.14); }
+  .footer-brand{ display:flex; align-items:center; gap:12px; }
+  .footer-brand svg{ width:44px; height:44px; }
+  .footer-brand-word{ font-family:var(--ff-display); font-size:22px; color:#fff; font-weight:600; }
+  .footer-tagline{ margin-top:12px; font-size:14px; max-width:280px; line-height:1.7; }
+  .footer-links{ display:flex; gap:64px; flex-wrap:wrap; }
+  .footer-col h4{ font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin:0 0 16px; font-weight:800; }
+  .footer-col ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .footer-col a{ text-decoration:none; font-size:14px; color:rgba(247,241,230,0.72); transition:color .2s ease; }
+  .footer-col a:hover{ color:#fff; }
+  .footer-bottom{ display:flex; justify-content:space-between; align-items:center; padding-top:26px; font-size:12.5px; flex-wrap:wrap; gap:12px; }
+  .footer-seals{ display:flex; gap:8px; }
+  .footer-seals .seal{ width:28px; height:28px; font-size:11px; }
+
+  /* ---------- reveal-on-scroll for generic elements ---------- */
+  [data-reveal]{ opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+  [data-reveal].in-view{ opacity:1; transform:translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+  }
+
+  a:focus-visible, button:focus-visible, .member-photo:focus-visible, .dropzone:focus-visible{
+    outline:2.5px solid var(--wine); outline-offset:3px;
+  }
+</style>
 </head>
-<body class="bg-[#F8F7F4] text-neutral-900 antialiased selection:bg-rose-500 selection:text-white">
+<body>
 
-    <!-- Navbar -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-[#F8F7F4]/80 backdrop-blur-md border-b border-neutral-200/50">
-        <div class="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
-            <a href="#" class="text-xl font-bold tracking-tight">
-                Baydoğan<span class="text-rose-500">.family</span>
-            </a>
-            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-600">
-                <a href="#hikaye" class="hover:text-neutral-900 transition">Hikaye</a>
-                <a href="#aile" class="hover:text-neutral-900 transition">Aile Kadrosu</a>
-                <a href="#galeri" class="hover:text-neutral-900 transition">Anı Defteri</a>
-            </nav>
-            <a href="#galeri" class="bg-neutral-900 text-white px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider hover:bg-rose-600 transition duration-300">
-                Albümü Gör
-            </a>
+<nav class="nav" id="nav">
+  <a href="#top" class="nav-brand">
+    <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="31" fill="#F7F1E6" stroke="#C9962C" stroke-width="2"/><circle cx="32" cy="32" r="25" fill="#7C2D3F"/><path d="M32 16 L48 28 V48 H38 V36 H26 V48 H16 V28 Z" fill="#F7F1E6"/></svg>
+    <span class="nav-word">Baydoğan Ailesi</span>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#top">Anasayfa</a></li>
+    <li><a href="#ailemiz">Ailemiz</a></li>
+    <li><a href="#albumler">Albümler</a></li>
+    <li><a href="#iletisim">İletişim</a></li>
+  </ul>
+  <button class="nav-burger" id="navBurger" aria-label="Menüyü aç"><span></span><span></span><span></span></button>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-deco"></div>
+  <div class="container hero-inner">
+    <div>
+      <div class="hero-eyebrow"><span class="rule"></span><span class="eyebrow">Aile Hikayemiz</span></div>
+      <h1>Beş kişi,<br><em>bir</em> yürek.</h1>
+      <p class="hero-sub">Abdullah, Ebru, Ozan, Emirhan ve Ömür Lena — Baydoğan ailesinin anılarını, fotoğraflarını ve küçük hikayelerini bir arada topladığımız köşemize hoş geldiniz.</p>
+      <div class="hero-cta-row">
+        <a href="#ailemiz" class="btn btn-primary">Ailemizi Tanıyın</a>
+        <a href="#albumler" class="btn btn-ghost">Albümlere Git</a>
+      </div>
+    </div>
+
+    <div class="family-card empty" id="familyCard">
+      <div class="family-card-scrim"></div>
+      <div class="family-card-content">
+        <div class="family-card-crest-row" id="familyCardSeals"></div>
+        <h2 class="family-card-title">Baydoğan Ailesi</h2>
+        <div class="family-card-sub">Büyük aile fotoğrafımız burada yer alacak</div>
+      </div>
+      <label class="hero-upload" id="heroUploadLabel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <span>Büyük aile fotoğrafını eklemek için tıklayın ya da sürükleyin</span>
+        <input type="file" accept="image/*" id="heroUploadInput">
+      </label>
+    </div>
+  </div>
+</header>
+
+<div class="divider-scallop"></div>
+
+<section class="intro">
+  <div class="container intro-grid">
+    <div class="intro-text" data-reveal>
+      <p>Bu sayfa; sabahları mutfaktan gelen çay kokusuyla, okuldan dönüşte anlatılan günlerle, hafta sonu birlikte çekilen fotoğraflarla büyüyen küçük bir arşiv olsun istedik. Baba Abdullah, anne Ebru, büyük oğlan Ozan, küçük oğlan Emirhan ve en küçüğümüz Ömür Lena — beşimizin hikayesi burada, zamanla dolacak sayfalarda saklı.</p>
+      <p>Her aile bireyinin kendine ait bir köşesi, kendi rengi ve kendi albümü var. Fotoğrafları toplu şekilde yükleyip anılarımızı burada bir araya getirebiliriz.</p>
+    </div>
+    <div class="quick-chips" data-reveal>
+      <h3>Hızlı Geçiş</h3>
+      <!-- chips injected by JS -->
+    </div>
+  </div>
+</section>
+
+<section class="family-grid" id="ailemiz">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Ailemiz</span>
+      <h2>Beş kişilik ekibimizle tanışın</h2>
+      <p>Her kart, ailemizin bir ferdine ait — fotoğrafını eklemek için daire simgesine tıklamanız yeterli.</p>
+    </div>
+    <div class="cards" id="familyCards"></div>
+  </div>
+</section>
+
+<section class="albums" id="albumler">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Albümler</span>
+      <h2>Anılarımız, kişi kişi</h2>
+      <p>Her bölüme istediğiniz kadar fotoğrafı sürükleyip bırakabilir ya da tıklayarak toplu şekilde seçebilirsiniz.</p>
+    </div>
+    <div id="albumBlocks"></div>
+  </div>
+</section>
+
+<footer id="iletisim">
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">
+          <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="31" fill="#F7F1E6" stroke="#C9962C" stroke-width="2"/><circle cx="32" cy="32" r="25" fill="#7C2D3F"/><path d="M32 16 L48 28 V48 H38 V36 H26 V48 H16 V28 Z" fill="#F7F1E6"/></svg>
+          <span class="footer-brand-word">Baydoğan Ailesi</span>
         </div>
-    </header>
-
-    <!-- Hero Section (Dribbble Tarzı) -->
-    <section class="pt-36 pb-20 px-8 max-w-7xl mx-auto">
-        <div class="max-w-3xl mb-16">
-            <span class="inline-block text-xs font-semibold uppercase tracking-widest text-rose-600 bg-rose-50 px-3.5 py-1.5 rounded-full mb-4">
-                Özel Aile Albümü
-            </span>
-            <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-                Ebru, Ozan, Emirhan, Ömür Lena ve Abdullah.
-            </h1>
-            <p class="text-neutral-600 text-lg md:text-xl font-light leading-relaxed">
-                Hayatın en değerli anlarını, gülümsemelerini ve birlikte yazdığımız sonsuz hikayeyi burada yaşatıyoruz.
-            </p>
+        <p class="footer-tagline">Küçük anların, büyük bir aile hikayesine dönüştüğü yer.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Keşfet</h4>
+          <ul>
+            <li><a href="#top">Anasayfa</a></li>
+            <li><a href="#ailemiz">Ailemiz</a></li>
+            <li><a href="#albumler">Albümler</a></li>
+          </ul>
         </div>
-
-        <!-- Büyük Karşılama Görseli / Banner -->
-        <div class="relative w-full h-[450px] md:h-[550px] rounded-[2.5rem] overflow-hidden bg-neutral-200 card-shadow group">
-            <img src="images/abdullah.jpg" alt="Abdullah Baydoğan" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-            <div class="absolute inset-0 bg-gradient-to-t from-neutral-900/60 via-transparent to-transparent flex items-end p-8 md:p-12">
-                <div class="text-white">
-                    <p class="text-xs uppercase tracking-widest text-rose-400 font-semibold mb-1">Kurucu & Rehber</p>
-                    <p class="text-2xl md:text-3xl font-bold">Abdullah Baydoğan</p>
-                </div>
-            </div>
+        <div class="footer-col">
+          <h4>Aile Bireyleri</h4>
+          <ul id="footerMemberLinks"></ul>
         </div>
-    </section>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="footerYear"></span> Baydoğan Ailesi. Sevgiyle hazırlandı.</span>
+      <div class="footer-seals" id="footerSeals"></div>
+    </div>
+  </div>
+</footer>
 
-    <!-- Aile Kadrosu Grid (Dribbble Kart Yapısı) -->
-    <section id="aile" class="py-20 px-8 max-w-7xl mx-auto border-t border-neutral-200/60">
-        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-                <span class="text-xs font-semibold uppercase tracking-widest text-neutral-400 block mb-2">01 / Kadro</span>
-                <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Mutlu Yuva Üyeleri</h2>
-            </div>
-        </div>
+<script>
+(function(){
+  // ---------------- Family data ----------------
+  var FAMILY = [
+    { id:'abdullah', name:'Abdullah Baydoğan', role:'Baba', color:'#2C3E55', tint:'#E7EAEE', bio:'Ailenin sakin ve güvenilir kalbi.' },
+    { id:'ebru',     name:'Ebru Baydoğan',     role:'Anne', color:'#7C2D3F', tint:'#F3E4E7', bio:'Evimizin sıcaklığı, gülüşlerin kaynağı.' },
+    { id:'ozan',     name:'Ozan Baydoğan',     role:'Büyük Oğlan', color:'#3F6B52', tint:'#E5EDE8', bio:'Ağabeylik görevini gururla taşıyan enerji küpü.' },
+    { id:'emirhan',  name:'Emirhan Baydoğan',  role:'Küçük Oğlan', color:'#C9962C', tint:'#F6ECD8', bio:'Meraklı gözlerle her şeyi keşfeden kaşif.' },
+    { id:'omurlena', name:'Ömür Lena Baydoğan',role:'En Küçük Kız', color:'#C97B84', tint:'#F6E7E9', bio:'Evin en küçüğü, en büyük neşe kaynağı.' }
+  ];
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            <!-- Abdullah -->
-            <div class="bg-white p-5 rounded-[2rem] card-shadow border border-neutral-100 flex flex-col justify-between group hover:-translate-y-1 transition duration-300">
-                <div class="w-full aspect-square rounded-[1.5rem] overflow-hidden bg-neutral-100 mb-5">
-                    <img src="images/abdullah.jpg" alt="Abdullah" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                </div>
-                <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">Baba</span>
-                    <h3 class="font-bold text-base mt-2">Abdullah Baydoğan</h3>
-                    <p class="text-xs text-neutral-400 mt-0.5">Yuvamızın koruyucusu</p>
-                </div>
-            </div>
-            <!-- Ebru -->
-            <div class="bg-white p-5 rounded-[2rem] card-shadow border border-neutral-100 flex flex-col justify-between group hover:-translate-y-1 transition duration-300">
-                <div class="w-full aspect-square rounded-[1.5rem] overflow-hidden bg-neutral-100 mb-5">
-                    <img src="images/ebru.jpg" alt="Ebru" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                </div>
-                <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">Anne</span>
-                    <h3 class="font-bold text-base mt-2">Ebru Baydoğan</h3>
-                    <p class="text-xs text-neutral-400 mt-0.5">Yuvamızın Kalbi</p>
-                </div>
-            </div>
-            <!-- Ozan -->
-            <div class="bg-white p-5 rounded-[2rem] card-shadow border border-neutral-100 flex flex-col justify-between group hover:-translate-y-1 transition duration-300">
-                <div class="w-full aspect-square rounded-[1.5rem] overflow-hidden bg-neutral-100 mb-5">
-                    <img src="images/ozan.jpg" alt="Ozan" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                </div>
-                <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">1. Çocuk</span>
-                    <h3 class="font-bold text-base mt-2">Ozan Baydoğan</h3>
-                    <p class="text-xs text-neutral-400 mt-0.5">Akıllı Kaşif</p>
-                </div>
-            </div>
-            <!-- Emirhan -->
-            <div class="bg-white p-5 rounded-[2rem] card-shadow border border-neutral-100 flex flex-col justify-between group hover:-translate-y-1 transition duration-300">
-                <div class="w-full aspect-square rounded-[1.5rem] overflow-hidden bg-neutral-100 mb-5">
-                    <img src="images/emirhan.jpg" alt="Emirhan" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                </div>
-                <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">2. Çocuk</span>
-                    <h3 class="font-bold text-base mt-2">Emirhan Baydoğan</h3>
-                    <p class="text-xs text-neutral-400 mt-0.5">Neşeli Prens</p>
-                </div>
-            </div>
-            <!-- Ömür Lena -->
-            <div class="bg-white p-5 rounded-[2rem] card-shadow border border-neutral-100 flex flex-col justify-between group hover:-translate-y-1 transition duration-300">
-                <div class="w-full aspect-square rounded-[1.5rem] overflow-hidden bg-neutral-100 mb-5">
-                    <img src="images/omurlena.jpg" alt="Ömür Lena" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                </div>
-                <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 py-1 rounded-md">3. Çocuk</span>
-                    <h3 class="font-bold text-base mt-2">Ömür Lena</h3>
-                    <p class="text-xs text-neutral-400 mt-0.5">Küçük Prenses</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  function initial(name){ return name.trim().charAt(0).toUpperCase(); }
 
-    <!-- Galeri (Dribbble Minimalist Grid) -->
-    <section id="galeri" class="py-20 px-8 max-w-7xl mx-auto border-t border-neutral-200/60">
-        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-                <span class="text-xs font-semibold uppercase tracking-widest text-neutral-400 block mb-2">02 / Galeri</span>
-                <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Anı Defterimiz</h2>
-            </div>
-        </div>
+  // ---------------- Render: hero mini seals ----------------
+  var heroSeals = document.getElementById('familyCardSeals');
+  FAMILY.forEach(function(m){
+    var s = document.createElement('div');
+    s.className = 'mini-seal';
+    s.style.background = m.color;
+    s.style.color = m.color;
+    s.textContent = initial(m.name);
+    s.title = m.name;
+    heroSeals.appendChild(s);
+  });
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            <div class="group relative overflow-hidden rounded-[2rem] aspect-square bg-neutral-200 card-shadow">
-                <img src="images/ani1.jpg" alt="Anı 1" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                <div class="absolute inset-0 bg-neutral-900/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-8">
-                    <p class="text-white font-medium text-sm">Tatil Hatıraları</p>
-                </div>
-            </div>
-            <div class="group relative overflow-hidden rounded-[2rem] aspect-square bg-neutral-200 card-shadow">
-                <img src="images/ani2.jpg" alt="Anı 2" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                <div class="absolute inset-0 bg-neutral-900/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-8">
-                    <p class="text-white font-medium text-sm">Mutlu Hafta Sonları</p>
-                </div>
-            </div>
-            <div class="group relative overflow-hidden rounded-[2rem] aspect-square bg-neutral-200 card-shadow">
-                <img src="images/ani3.jpg" alt="Anı 3" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                <div class="absolute inset-0 bg-neutral-900/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-8">
-                    <p class="text-white font-medium text-sm">Keyifli Anlar</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  // ---------------- Render: quick chips ----------------
+  var chipsWrap = document.querySelector('.quick-chips');
+  FAMILY.forEach(function(m){
+    var a = document.createElement('a');
+    a.className = 'chip';
+    a.href = '#member-' + m.id;
+    a.innerHTML = '<span class="seal" style="width:26px;height:26px;font-size:12px;background:' + m.color + ';color:' + m.color + '">' + initial(m.name) + '</span>' + m.name.split(' ')[0];
+    chipsWrap.appendChild(a);
+  });
 
-    <!-- Footer -->
-    <footer class="bg-neutral-900 text-white py-16 px-8 mt-16">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-                <p class="text-2xl font-bold tracking-tight mb-1">Baydoğan<span class="text-rose-500">.family</span></p>
-                <p class="text-neutral-400 text-sm">Ebru, Ozan, Emirhan, Ömür Lena & Abdullah</p>
-            </div>
-            <div class="text-center md:text-right text-xs text-neutral-400">
-                <p class="mb-1">Sevgiyle tasarlandı © 2026</p>
-                <p class="text-neutral-500">GitHub Pages ile yayında</p>
-            </div>
-        </div>
-    </footer>
+  // ---------------- Render: member cards ----------------
+  var cardsWrap = document.getElementById('familyCards');
+  FAMILY.forEach(function(m){
+    var card = document.createElement('div');
+    card.className = 'member-card';
+    card.style.setProperty('--accent', m.color);
+    card.style.setProperty('--accent-tint', m.tint);
+    card.id = 'member-' + m.id;
+    card.innerHTML =
+      '<label class="member-photo" tabindex="0">' +
+        '<span class="seal">' + initial(m.name) + '</span>' +
+        '<span class="photo-hint">Fotoğraf ekle</span>' +
+        '<input type="file" accept="image/*" data-member="' + m.id + '" class="member-photo-input">' +
+      '</label>' +
+      '<span class="member-role">' + m.role + '</span>' +
+      '<h3>' + m.name + '</h3>' +
+      '<p>' + m.bio + '</p>' +
+      '<a class="member-link" href="#album-' + m.id + '">Albümünü gör ' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' +
+      '</a>';
+    cardsWrap.appendChild(card);
+  });
 
+  // ---------------- Render: album blocks ----------------
+  var albumsWrap = document.getElementById('albumBlocks');
+  FAMILY.forEach(function(m){
+    var block = document.createElement('div');
+    block.className = 'album-block';
+    block.id = 'album-' + m.id;
+    block.innerHTML =
+      '<div class="album-head">' +
+        '<span class="seal" style="background:' + m.color + ';color:' + m.color + '">' + initial(m.name) + '</span>' +
+        '<h3>' + m.name.split(' ')[0] + '\u2019nin Albümü</h3>' +
+        '<span class="count" data-count-for="' + m.id + '">0 fotoğraf</span>' +
+      '</div>' +
+      '<label class="dropzone" style="--accent:' + m.color + '; --accent-tint:' + m.tint + '" tabindex="0" data-dropzone="' + m.id + '">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>' +
+        '<p>Fotoğrafları buraya sürükleyin ya da tıklayın</p>' +
+        '<span>Toplu seçim desteklenir · JPG, PNG</span>' +
+        '<input type="file" accept="image/*" multiple data-member="' + m.id + '" class="album-upload-input">' +
+      '</label>' +
+      '<div class="photo-grid" id="grid-' + m.id + '" style="--accent:' + m.color + '; --accent-tint:' + m.tint + '"></div>';
+    albumsWrap.appendChild(block);
+
+    // seed a few placeholder frames so the grid never looks empty
+    var grid = block.querySelector('.photo-grid');
+    for (var i=0;i<3;i++){
+      var ph = document.createElement('div');
+      ph.className = 'frame placeholder-frame';
+      ph.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+      grid.appendChild(ph);
+    }
+  });
+
+  // ---------------- Render: footer member links + seals ----------------
+  var footerLinks = document.getElementById('footerMemberLinks');
+  var footerSeals = document.getElementById('footerSeals');
+  FAMILY.forEach(function(m){
+    var li = document.createElement('li');
+    li.innerHTML = '<a href="#member-' + m.id + '">' + m.name + '</a>';
+    footerLinks.appendChild(li);
+
+    var s = document.createElement('div');
+    s.className = 'seal';
+    s.style.background = m.color;
+    s.style.color = m.color;
+    s.textContent = initial(m.name);
+    footerSeals.appendChild(s);
+  });
+
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+  // ---------------- Photo upload helpers (client-side preview only) ----------------
+  function readAsURL(file, cb){
+    var reader = new FileReader();
+    reader.onload = function(e){ cb(e.target.result); };
+    reader.readAsDataURL(file);
+  }
+
+  function updateCount(memberId){
+    var grid = document.getElementById('grid-' + memberId);
+    var real = grid.querySelectorAll('.frame:not(.placeholder-frame)').length;
+    var el = document.querySelector('[data-count-for="' + memberId + '"]');
+    if (el) el.textContent = real + (real === 1 ? ' fotoğraf' : ' fotoğraf');
+  }
+
+  function addPhotoToGrid(memberId, dataUrl){
+    var grid = document.getElementById('grid-' + memberId);
+    var placeholder = grid.querySelector('.placeholder-frame');
+    if (placeholder) placeholder.remove();
+    var frame = document.createElement('div');
+    frame.className = 'frame';
+    frame.innerHTML = '<img src="' + dataUrl + '" alt=""><button class="remove" type="button" aria-label="Kaldır">&times;</button>';
+    frame.querySelector('.remove').addEventListener('click', function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      frame.remove();
+      updateCount(memberId);
+    });
+    grid.insertBefore(frame, grid.firstChild);
+    updateCount(memberId);
+  }
+
+  function handleFiles(memberId, fileList){
+    Array.prototype.forEach.call(fileList, function(file){
+      if (!/^image\//.test(file.type)) return;
+      readAsURL(file, function(url){ addPhotoToGrid(memberId, url); });
+    });
+  }
+
+  // album dropzones
+  document.querySelectorAll('.dropzone').forEach(function(zone){
+    var memberId = zone.getAttribute('data-dropzone');
+    var input = zone.querySelector('.album-upload-input');
+    zone.addEventListener('click', function(){ input.click(); });
+    zone.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); input.click(); } });
+    input.addEventListener('change', function(){ handleFiles(memberId, input.files); input.value=''; });
+    ['dragenter','dragover'].forEach(function(evt){
+      zone.addEventListener(evt, function(e){ e.preventDefault(); zone.classList.add('drag'); });
+    });
+    ['dragleave','drop'].forEach(function(evt){
+      zone.addEventListener(evt, function(e){ e.preventDefault(); zone.classList.remove('drag'); });
+    });
+    zone.addEventListener('drop', function(e){
+      if (e.dataTransfer && e.dataTransfer.files) handleFiles(memberId, e.dataTransfer.files);
+    });
+  });
+
+  // member card photo (single, becomes the seal image)
+  document.querySelectorAll('.member-photo-input').forEach(function(input){
+    input.addEventListener('change', function(){
+      var memberId = input.getAttribute('data-member');
+      if (!input.files || !input.files[0]) return;
+      readAsURL(input.files[0], function(url){
+        var photoEl = input.closest('.member-photo');
+        var seal = photoEl.querySelector('.seal');
+        if (seal) seal.remove();
+        var img = photoEl.querySelector('img');
+        if (!img){ img = document.createElement('img'); photoEl.insertBefore(img, photoEl.querySelector('.photo-hint')); }
+        img.src = url;
+      });
+    });
+  });
+
+  // hero big family photo
+  var heroInput = document.getElementById('heroUploadInput');
+  var heroCard = document.getElementById('familyCard');
+  heroInput.addEventListener('change', function(){
+    if (!heroInput.files || !heroInput.files[0]) return;
+    readAsURL(heroInput.files[0], function(url){
+      var img = heroCard.querySelector('img.uploaded');
+      if (!img){
+        img = document.createElement('img');
+        img.className = 'uploaded';
+        heroCard.insertBefore(img, heroCard.querySelector('.family-card-scrim'));
+      }
+      img.src = url;
+      heroCard.classList.remove('empty');
+    });
+  });
+  ['dragenter','dragover'].forEach(function(evt){
+    heroCard.addEventListener(evt, function(e){ e.preventDefault(); heroCard.classList.add('empty'); });
+  });
+  heroCard.addEventListener('drop', function(e){
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
+      readAsURL(e.dataTransfer.files[0], function(url){
+        var img = heroCard.querySelector('img.uploaded');
+        if (!img){ img = document.createElement('img'); img.className='uploaded'; heroCard.insertBefore(img, heroCard.querySelector('.family-card-scrim')); }
+        img.src = url;
+        heroCard.classList.remove('empty');
+      });
+    }
+  });
+
+  // ---------------- Nav scroll state + mobile toggle ----------------
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function(){
+    if (window.scrollY > 30) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+  });
+  var burger = document.getElementById('navBurger');
+  var navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', function(){ navLinks.classList.toggle('open'); });
+  navLinks.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ navLinks.classList.remove('open'); });
+  });
+
+  // ---------------- Scroll reveal ----------------
+  var revealTargets = document.querySelectorAll('[data-reveal], .member-card, .album-block');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold:0.12, rootMargin:'0px 0px -60px 0px' });
+  revealTargets.forEach(function(el){ io.observe(el); });
+})();
+</script>
 </body>
 </html>
