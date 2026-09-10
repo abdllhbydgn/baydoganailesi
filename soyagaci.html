@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>Soyağacı — Baydoğan Ailesi</title>
+<meta name="description" content="Baydoğan Ailesi soyağacı — nesiller, aile bağları ve kişi profilleri.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='31' fill='%23F7F1E6' stroke='%23C9962C' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='25' fill='%237C2D3F'/%3E%3Cpath d='M32 16 L48 28 V48 H38 V36 H26 V48 H16 V28 Z' fill='%23F7F1E6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#23222B; --ink-soft:#4A4854; --paper:#F7F1E6; --paper-deep:#EFE6D4;
+    --wine:#7C2D3F; --wine-deep:#5C2130; --navy:#2C3E55; --forest:#3F6B52; --gold:#C9962C; --rose:#C97B84;
+    --line:rgba(35,34,43,0.14); --shadow:0 18px 40px rgba(35,34,43,0.16); --shadow-soft:0 8px 22px rgba(35,34,43,0.09);
+    --radius-lg:24px; --radius-md:16px; --radius-sm:10px;
+    --ff-display:'Fraunces', serif; --ff-body:'Manrope', sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; font-family:var(--ff-body); color:var(--ink);
+    background:
+      radial-gradient(circle at 1px 1px, rgba(35,34,43,0.05) 1px, transparent 0) 0 0/22px 22px,
+      var(--paper);
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+  a{ color:inherit; }
+  h1,h2,h3{ font-family:var(--ff-display); font-weight:600; margin:0; color:var(--ink); }
+  button{ font-family:var(--ff-body); }
+  ::selection{ background:var(--gold); color:var(--ink); }
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:600;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding:12px 20px; background:rgba(247,241,230,0.94); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); box-shadow:0 6px 20px rgba(35,34,43,0.06);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
+  .brand svg{ width:32px; height:32px; }
+  .brand-word{ font-family:var(--ff-display); font-weight:600; font-size:17px; white-space:nowrap; }
+  .brand-sub{ font-size:11px; color:var(--wine); font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+  .back-home{
+    display:flex; align-items:center; gap:6px; text-decoration:none; color:var(--ink-soft); font-weight:700; font-size:13px;
+    padding:8px 12px; border-radius:999px; border:1.5px solid var(--line); flex-shrink:0;
+  }
+  .back-home:hover{ border-color:var(--ink); color:var(--ink); }
+  .back-home svg{ width:15px; height:15px; }
+
+  .search-wrap{ position:relative; flex:1; min-width:160px; max-width:320px; }
+  .search-wrap input{
+    width:100%; padding:9px 14px 9px 36px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; font-size:13.5px; font-family:var(--ff-body); color:var(--ink);
+  }
+  .search-wrap input:focus{ outline:none; border-color:var(--wine); }
+  .search-wrap svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--ink-soft); pointer-events:none; }
+  .search-results{
+    position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; border-radius:var(--radius-sm);
+    box-shadow:var(--shadow); border:1px solid var(--line); max-height:260px; overflow-y:auto; display:none; z-index:50;
+  }
+  .search-results.open{ display:block; }
+  .search-result-item{
+    display:flex; align-items:center; gap:10px; padding:9px 12px; cursor:pointer; font-size:13.5px; font-weight:700;
+  }
+  .search-result-item:hover{ background:var(--paper); }
+  .search-result-item .mini-avatar{ width:26px; height:26px; border-radius:50%; flex-shrink:0; }
+
+  .toolbar-actions{ display:flex; align-items:center; gap:8px; margin-inline-start:auto; flex-wrap:wrap; }
+  .tbtn{
+    display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; color:var(--ink); font-weight:700; font-size:12.5px; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    white-space:nowrap;
+  }
+  .tbtn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-soft); border-color:var(--ink); }
+  .tbtn svg{ width:15px; height:15px; }
+  .tbtn.primary{ background:var(--wine); color:#fff; border-color:var(--wine); }
+  .tbtn.primary:hover{ background:var(--wine-deep); border-color:var(--wine-deep); }
+  .tbtn.icon-only{ padding:9px; }
+  #jsonImportInput{ display:none; }
+
+  /* ---------- ZOOM CONTROLS ---------- */
+  .zoom-controls{
+    position:fixed; bottom:22px; inset-inline-end:22px; z-index:400; display:flex; flex-direction:column; gap:8px;
+    background:#fff; border-radius:16px; padding:8px; box-shadow:var(--shadow); border:1px solid var(--line);
+  }
+  .zoom-btn{
+    width:38px; height:38px; border-radius:10px; border:none; background:var(--paper); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; font-weight:800;
+    transition:background .2s ease;
+  }
+  .zoom-btn:hover{ background:var(--paper-deep); }
+  .zoom-btn svg{ width:17px; height:17px; }
+  .zoom-pct{ text-align:center; font-size:10.5px; font-weight:800; color:var(--ink-soft); }
+
+  .gen-legend{
+    position:fixed; bottom:22px; left:22px; z-index:400; background:#fff; border-radius:14px; padding:10px 14px;
+    box-shadow:var(--shadow-soft); border:1px solid var(--line); font-size:11.5px; color:var(--ink-soft); font-weight:700;
+    display:flex; align-items:center; gap:8px;
+  }
+  .gen-legend svg{ width:14px; height:14px; color:var(--wine); }
+
+  /* ---------- VIEWPORT / CANVAS ---------- */
+  .viewport{
+    position:absolute; inset:0; top:0; overflow:hidden; cursor:grab;
+    background:
+      radial-gradient(560px circle at 85% 12%, rgba(201,150,44,0.10), transparent 60%),
+      radial-gradient(500px circle at 8% 85%, rgba(124,45,63,0.07), transparent 60%);
+  }
+  .viewport.grabbing{ cursor:grabbing; }
+  .tree-canvas{
+    position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform;
+  }
+  .tree-canvas svg.connectors{ position:absolute; top:0; left:0; overflow:visible; pointer-events:none; }
+
+  .gen-row-label{
+    position:absolute; font-family:var(--ff-display); font-size:13px; font-weight:600; color:var(--wine);
+    background:rgba(247,241,230,0.9); padding:4px 12px; border-radius:999px; border:1px solid var(--line);
+    white-space:nowrap; pointer-events:none;
+  }
+
+  /* ---------- PERSON CARD ---------- */
+  .person-card{
+    position:absolute; width:180px; border-radius:var(--radius-md); background:#fff; border:1px solid var(--line);
+    box-shadow:var(--shadow-soft); padding:14px 14px 12px; text-align:center; cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    user-select:none;
+  }
+  .person-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow); border-color:var(--accent, var(--wine)); z-index:5; }
+  .person-card.highlight{ animation:cardPulse 1.4s ease 2; border-color:var(--wine); }
+  @keyframes cardPulse{ 0%,100%{ box-shadow:var(--shadow-soft); } 50%{ box-shadow:0 0 0 6px rgba(124,45,63,0.18), var(--shadow); } }
+  .person-card::before{
+    content:''; position:absolute; top:0; left:16px; right:16px; height:4px; border-radius:0 0 4px 4px;
+    background:var(--accent, var(--wine));
+  }
+  .pc-avatar{
+    width:64px; height:64px; border-radius:50%; margin:6px auto 10px; overflow:hidden; position:relative;
+    background:var(--accent-tint, #EFE6D4); display:flex; align-items:center; justify-content:center;
+    border:3px solid #fff; box-shadow:0 0 0 2px var(--accent, var(--wine));
+  }
+  .pc-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .pc-avatar .pc-initial{ font-family:var(--ff-display); font-weight:600; font-size:22px; color:var(--accent, var(--wine)); }
+  .pc-name{ font-size:14px; font-weight:800; line-height:1.25; color:var(--ink); }
+  .pc-dates{ font-size:10.5px; color:var(--ink-soft); font-weight:700; margin-top:4px; }
+  .pc-deceased{ opacity:.62; filter:grayscale(0.3); }
+  .pc-deceased-tag{ font-size:9px; color:var(--ink-soft); }
+
+  .spouse-heart{
+    position:absolute; width:22px; height:22px; border-radius:50%; background:#fff; border:1.5px solid var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--wine); box-shadow:var(--shadow-soft); z-index:4;
+  }
+  .spouse-heart svg{ width:11px; height:11px; }
+
+  /* ---------- PROFILE / EDIT PANEL ---------- */
+  .overlay-scrim{
+    position:fixed; inset:0; background:rgba(35,34,43,0.4); z-index:900; opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .overlay-scrim.open{ opacity:1; pointer-events:auto; }
+  .side-panel{
+    position:fixed; top:0; right:0; height:100%; width:420px; max-width:92vw; background:var(--paper);
+    box-shadow:-14px 0 40px rgba(35,34,43,0.18); z-index:901; transform:translateX(100%); transition:transform .3s cubic-bezier(.16,1,.3,1);
+    overflow-y:auto; padding-bottom:40px;
+  }
+  .side-panel.open{ transform:translateX(0); }
+  .sp-header{
+    display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:var(--paper); z-index:2;
+  }
+  .sp-header h2{ font-size:19px; }
+  .sp-close{ width:34px; height:34px; border-radius:50%; border:none; background:#fff; box-shadow:var(--shadow-soft); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .sp-close svg{ width:16px; height:16px; }
+  .sp-body{ padding:22px; }
+
+  /* profile view */
+  .profile-avatar-row{ display:flex; align-items:center; gap:16px; margin-bottom:18px; }
+  .profile-avatar{ width:88px; height:88px; border-radius:50%; overflow:hidden; background:var(--accent-tint,#EFE6D4); display:flex; align-items:center; justify-content:center; border:3px solid #fff; box-shadow:0 0 0 2px var(--accent, var(--wine)); flex-shrink:0; }
+  .profile-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .profile-avatar .pc-initial{ font-family:var(--ff-display); font-size:30px; font-weight:600; color:var(--accent, var(--wine)); }
+  .profile-name{ font-size:22px; font-weight:700; }
+  .profile-role{ font-size:12.5px; font-weight:800; color:var(--accent, var(--wine)); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; }
+  .profile-field{ margin-bottom:16px; }
+  .profile-field .lbl{ font-size:10.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
+  .profile-field .val{ font-size:14.5px; color:var(--ink); line-height:1.6; }
+  .profile-field .val.empty{ color:var(--ink-soft); font-style:italic; }
+  .profile-links{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .profile-link-chip{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:#fff;
+    border:1px solid var(--line); font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  .profile-link-chip:hover{ border-color:var(--ink); }
+  .profile-actions{ display:flex; gap:10px; margin-top:26px; }
+  .profile-actions .btn2{ flex:1; padding:11px; border-radius:10px; border:none; font-weight:800; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .btn2-edit{ background:var(--navy); color:#fff; }
+  .btn2-delete{ background:#fff; color:var(--wine); border:1.5px solid var(--wine) !important; }
+
+  /* edit form */
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:11px; font-weight:800; color:var(--ink-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+  .field input[type=text], .field input[type=date], .field select, .field textarea{
+    width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid var(--line); background:#fff; font-size:14px;
+    font-family:var(--ff-body); color:var(--ink);
+  }
+  .field textarea{ resize:vertical; min-height:70px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .photo-upload-field{
+    display:flex; align-items:center; gap:14px; padding:12px; border:1.5px dashed var(--line); border-radius:12px; cursor:pointer; background:#fff;
+  }
+  .photo-upload-field .pu-preview{ width:56px; height:56px; border-radius:50%; overflow:hidden; background:var(--paper); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .photo-upload-field .pu-preview img{ width:100%; height:100%; object-fit:cover; }
+  .photo-upload-field span{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+  .gender-toggle{ display:flex; gap:8px; }
+  .gender-toggle button{
+    flex:1; padding:9px; border-radius:9px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .gender-toggle button.active{ background:var(--wine); color:#fff; border-color:var(--wine); }
+  .save-row{ display:flex; gap:10px; margin-top:20px; }
+  .save-row button{ flex:1; padding:13px; border-radius:10px; border:none; font-weight:800; font-size:14px; cursor:pointer; }
+  .save-btn{ background:var(--wine); color:#fff; }
+  .save-btn:hover{ background:var(--wine-deep); }
+  .cancel-btn{ background:#fff; border:1.5px solid var(--line) !important; }
+
+  .empty-state{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:320px;
+  }
+  .empty-state svg{ width:52px; height:52px; color:var(--wine); opacity:.7; margin-bottom:14px; }
+  .empty-state h3{ font-size:20px; margin-bottom:8px; }
+  .empty-state p{ font-size:14px; color:var(--ink-soft); line-height:1.6; margin-bottom:18px; }
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(120%); background:var(--ink); color:#fff;
+    padding:12px 22px; border-radius:999px; font-size:13.5px; font-weight:700; z-index:1000; box-shadow:var(--shadow);
+    transition:transform .3s cubic-bezier(.16,1,.3,1); pointer-events:none;
+  }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+
+  @media (max-width:760px){
+    .topbar{ padding:10px 14px; gap:8px; }
+    .brand-word{ display:none; }
+    .search-wrap{ order:3; max-width:none; flex:1 1 100%; }
+    .toolbar-actions{ margin-inline-start:0; }
+    .tbtn span.lbl-text{ display:none; }
+    .side-panel{ width:100%; max-width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="brand">
+    <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="31" fill="#F7F1E6" stroke="#C9962C" stroke-width="2"/><circle cx="32" cy="32" r="25" fill="#7C2D3F"/><path d="M32 16 L48 28 V48 H38 V36 H26 V48 H16 V28 Z" fill="#F7F1E6"/></svg>
+    <div><div class="brand-word">Baydoğan Ailesi</div><div class="brand-sub">Soyağacı</div></div>
+  </a>
+  <a href="index.html" class="back-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Siteye Dön
+  </a>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="Aile bireyi ara...">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+  <div class="toolbar-actions">
+    <button class="tbtn primary" onclick="openAddPersonForm()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span class="lbl-text">Kişi Ekle</span>
+    </button>
+    <button class="tbtn" onclick="exportJSON()" title="JSON olarak yedekle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span class="lbl-text">Yedekle</span>
+    </button>
+    <button class="tbtn" onclick="document.getElementById('jsonImportInput').click()" title="JSON'dan geri yükle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="lbl-text">Geri Yükle</span>
+    </button>
+    <input type="file" id="jsonImportInput" accept="application/json">
+  </div>
+</div>
+
+<div class="viewport" id="viewport">
+  <div class="tree-canvas" id="treeCanvas">
+    <svg class="connectors" id="connectorsSvg"></svg>
+  </div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22c4-4 8-8.5 8-13a8 8 0 1 0-16 0c0 4.5 4 9 8 13Z"/><circle cx="12" cy="9" r="3"/></svg>
+    <h3>Soyağacı boş</h3>
+    <p>İlk aile bireyini ekleyerek soyağacını oluşturmaya başla.</p>
+    <button class="tbtn primary" style="margin:0 auto;" onclick="openAddPersonForm()">➕ İlk Kişiyi Ekle</button>
+  </div>
+</div>
+
+<div class="zoom-controls">
+  <button class="zoom-btn" onclick="zoomBy(0.15)" title="Yakınlaştır">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/><path d="m21 21-4.3-4.3"/></svg>
+  </button>
+  <div class="zoom-pct" id="zoomPct">100%</div>
+  <button class="zoom-btn" onclick="zoomBy(-0.15)" title="Uzaklaştır">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="8" y1="11" x2="14" y2="11"/><path d="m21 21-4.3-4.3"/></svg>
+  </button>
+  <button class="zoom-btn" onclick="resetView()" title="Ortala / Sıfırla">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>
+  </button>
+</div>
+
+<div class="gen-legend">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M12 10 6 4M12 10l6-6M6 20v-4M18 20v-4"/></svg>
+  Sürükleyerek gezin · Fare tekerleğiyle yakınlaştırın
+</div>
+
+<div class="overlay-scrim" id="overlayScrim" onclick="closeSidePanel()"></div>
+
+<!-- Profile view panel -->
+<div class="side-panel" id="profilePanel">
+  <div class="sp-header">
+    <h2>Kişi Profili</h2>
+    <button class="sp-close" onclick="closeSidePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sp-body" id="profileBody"></div>
+</div>
+
+<!-- Add / edit form panel -->
+<div class="side-panel" id="editPanel">
+  <div class="sp-header">
+    <h2 id="editPanelTitle">Kişi Ekle</h2>
+    <button class="sp-close" onclick="closeSidePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sp-body">
+    <div class="field">
+      <label>Fotoğraf</label>
+      <label class="photo-upload-field" id="photoUploadField">
+        <div class="pu-preview" id="photoPreview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:24px;height:24px;color:var(--ink-soft);"><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M12 3v13M12 3l-4 4M12 3l4 4"/></svg></div>
+        <span>Fotoğraf yüklemek için tıklayın</span>
+        <input type="file" accept="image/*" id="photoInput" style="display:none;">
+      </label>
+    </div>
+    <div class="field">
+      <label>Ad Soyad *</label>
+      <input type="text" id="f-name" placeholder="Örn. Abdullah Baydoğan">
+    </div>
+    <div class="field">
+      <label>Cinsiyet</label>
+      <div class="gender-toggle" id="genderToggle">
+        <button type="button" data-g="M" onclick="setGender('M')">Erkek</button>
+        <button type="button" data-g="F" onclick="setGender('F')">Kadın</button>
+        <button type="button" data-g="" onclick="setGender('')">Belirtilmedi</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Doğum Tarihi</label>
+        <input type="date" id="f-birth">
+      </div>
+      <div class="field">
+        <label>Ölüm Tarihi</label>
+        <input type="date" id="f-death">
+      </div>
+    </div>
+    <div class="field">
+      <label>Baba</label>
+      <select id="f-father"><option value="">— Yok / Bilinmiyor —</option></select>
+    </div>
+    <div class="field">
+      <label>Anne</label>
+      <select id="f-mother"><option value="">— Yok / Bilinmiyor —</option></select>
+    </div>
+    <div class="field">
+      <label>Eş</label>
+      <select id="f-spouse"><option value="">— Yok —</option></select>
+    </div>
+    <div class="field">
+      <label>Biyografi / Notlar</label>
+      <textarea id="f-bio" placeholder="Kısa bir tanıtım, anı ya da not yazın..."></textarea>
+    </div>
+    <div class="save-row">
+      <button class="cancel-btn" onclick="closeSidePanel()">Vazgeç</button>
+      <button class="save-btn" onclick="savePersonForm()">💾 Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ================= CONFIG =================
+  var STORAGE_KEY = 'baydogan_soyagaci_v1';
+  var CARD_W = 180, CARD_H = 168, COUPLE_GAP = 16, H_GAP = 46, V_GAP = 130, ROW_TOP_PAD = 130, SIDE_PAD = 80;
+  var PHOTO_MAX_DIM = 320; // px — uploaded photos are downsized before being stored
+  var COLORS = ['#2C3E55','#7C2D3F','#3F6B52','#C9962C','#C97B84','#5C2130','#4A6FA5','#8A6D3B'];
+
+  // ================= STATE =================
+  var persons = [];        // {id,name,gender,birthDate,deathDate,photo,bio,fatherId,motherId,spouseId}
+  var byId = {};
+  var pan = { x:0, y:0 }, zoom = 1;
+  var editingId = null;    // person currently open in the edit form (null = adding new)
+  var pendingPhoto = '';   // base64 photo staged in the edit form
+
+  // ================= SEED DATA (first run only) =================
+  function seedData(){
+    var p1 = { id:'abdullah', name:'Abdullah Baydoğan', gender:'M', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'', motherId:'', spouseId:'ebru' };
+    var p2 = { id:'ebru', name:'Ebru Baydoğan', gender:'F', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'', motherId:'', spouseId:'abdullah' };
+    var p3 = { id:'ozan', name:'Ozan Baydoğan', gender:'M', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'abdullah', motherId:'ebru', spouseId:'' };
+    var p4 = { id:'emirhan', name:'Emirhan Baydoğan', gender:'M', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'abdullah', motherId:'ebru', spouseId:'' };
+    var p5 = { id:'omurlena', name:'Ömür Lena Baydoğan', gender:'F', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'abdullah', motherId:'ebru', spouseId:'' };
+    return [p1,p2,p3,p4,p5];
+  }
+
+  // ================= PERSISTENCE =================
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw){
+        var data = JSON.parse(raw);
+        persons = Array.isArray(data.persons) ? data.persons : [];
+      } else {
+        persons = seedData();
+        save();
+      }
+    } catch(e){
+      console.error('Soyağacı verisi okunamadı:', e);
+      persons = [];
+    }
+    rebuildIndex();
+  }
+  function save(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ persons: persons, savedAt: new Date().toISOString() }));
+    } catch(e){
+      console.error('Soyağacı verisi kaydedilemedi:', e);
+      showToast('⚠️ Kaydetme başarısız — tarayıcı depolama alanı dolu olabilir.');
+    }
+  }
+  function rebuildIndex(){
+    byId = {};
+    persons.forEach(function(p){ byId[p.id] = p; });
+  }
+  function uid(){ return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7); }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  // ================= HELPERS =================
+  function initial(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
+  function colorFor(id){
+    var idx = 0, s = id || '';
+    for (var i=0;i<s.length;i++) idx += s.charCodeAt(i);
+    return COLORS[idx % COLORS.length];
+  }
+  function tint(hex){
+    // very light tint of the accent color, used as avatar background
+    return hex + '22';
+  }
+  function getSpouse(id){ var p = byId[id]; return p && p.spouseId ? byId[p.spouseId] : null; }
+  function getChildren(id){
+    return persons.filter(function(p){ return p.fatherId === id || p.motherId === id; });
+  }
+  function getCoupleChildren(id1, id2){
+    var map = {}, out = [];
+    persons.forEach(function(p){
+      var parents = [p.fatherId, p.motherId].filter(Boolean);
+      if (parents.indexOf(id1) !== -1 || (id2 && parents.indexOf(id2) !== -1)){
+        if (!map[p.id]){ map[p.id] = true; out.push(p); }
+      }
+    });
+    return out;
+  }
+  function fmtDate(d){
+    if (!d) return '';
+    var parts = d.split('-');
+    if (parts.length !== 3) return d;
+    return parts[2] + '.' + parts[1] + '.' + parts[0];
+  }
+  function fmtYear(d){ if(!d) return ''; return d.split('-')[0]; }
+  function lifeSpan(p){
+    if (!p.birthDate && !p.deathDate) return '';
+    var b = fmtYear(p.birthDate) || '?';
+    return p.deathDate ? (b + ' – ' + fmtYear(p.deathDate)) : (b + ' –');
+  }
+
+  // ================= LAYOUT =================
+  var visited, positions, generations, maxGen;
+
+  function computeLayout(){
+    visited = {};
+    positions = {};
+    generations = {};
+    maxGen = 0;
+
+    // roots = persons with no parents present in the dataset
+    var roots = persons.filter(function(p){
+      return (!p.fatherId || !byId[p.fatherId]) && (!p.motherId || !byId[p.motherId]);
+    });
+    // stable order: keep original array order
+    var rootUnits = [];
+    roots.forEach(function(p){
+      if (visited[p.id]) return;
+      var spouse = getSpouse(p.id);
+      // only start a unit from a root if its spouse (if any) is also unparented-or-absent;
+      // otherwise let the spouse's own pass pick it up naturally via layoutUnit's visited-marking
+      var layout = layoutUnit(p.id);
+      if (layout) rootUnits.push(layout);
+    });
+
+    var totalWidth = 0;
+    rootUnits.forEach(function(u){
+      u.offsetX = totalWidth;
+      totalWidth += u.width + H_GAP * 2.2;
+    });
+    totalWidth -= H_GAP * 2.2;
+
+    rootUnits.forEach(function(u){ place(u, u.offsetX, 0); });
+
+    return { width: Math.max(totalWidth, CARD_W), rootCount: rootUnits.length };
+  }
+
+  function layoutUnit(personId){
+    if (visited[personId]) return null;
+    var person = byId[personId];
+    if (!person) return null;
+    var spouse = getSpouse(personId);
+    visited[personId] = true;
+    if (spouse) visited[spouse.id] = true;
+
+    var children = getCoupleChildren(personId, spouse ? spouse.id : null);
+    var ids = spouse ? [personId, spouse.id] : [personId];
+    var unitWidth = spouse ? (CARD_W * 2 + COUPLE_GAP) : CARD_W;
+
+    var childLayouts = [];
+    var childrenWidth = 0;
+    children.forEach(function(child){
+      var cl = layoutUnit(child.id);
+      if (!cl) return;
+      cl.offsetX = childrenWidth;
+      childrenWidth += cl.width + H_GAP;
+      childLayouts.push(cl);
+    });
+    if (childrenWidth > 0) childrenWidth -= H_GAP;
+
+    return {
+      ids: ids,
+      width: Math.max(unitWidth, childrenWidth),
+      unitWidth: unitWidth,
+      childLayouts: childLayouts,
+      childrenWidth: childrenWidth
+    };
+  }
+
+  function place(layout, xStart, gen){
+    if (gen > maxGen) maxGen = gen;
+    var unitX = xStart + (layout.width - layout.unitWidth) / 2;
+    var cx = unitX;
+    layout.ids.forEach(function(id){
+      positions[id] = { x: cx, y: ROW_TOP_PAD + gen * (CARD_H + V_GAP) };
+      generations[id] = gen;
+      cx += CARD_W + COUPLE_GAP;
+    });
+    var childrenX = xStart + (layout.width - layout.childrenWidth) / 2;
+    layout.childLayouts.forEach(function(cl){
+      place(cl, childrenX + cl.offsetX, gen + 1);
+    });
+  }
+
+  // ================= RENDER =================
+  function render(){
+    rebuildIndex();
+    var canvas = document.getElementById('treeCanvas');
+    var svg = document.getElementById('connectorsSvg');
+    var emptyState = document.getElementById('emptyState');
+
+    // clear (keep the svg element itself, wipe its children + any cards/labels)
+    Array.prototype.slice.call(canvas.querySelectorAll('.person-card, .spouse-heart, .gen-row-label')).forEach(function(el){ el.remove(); });
+    svg.innerHTML = '';
+
+    if (persons.length === 0){
+      emptyState.style.display = 'block';
+      canvas.style.width = '0px'; canvas.style.height = '0px';
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    var layoutInfo = computeLayout();
+    var totalW = SIDE_PAD * 2 + layoutInfo.width;
+    var totalH = ROW_TOP_PAD + (maxGen + 1) * (CARD_H + V_GAP);
+    canvas.style.width = totalW + 'px';
+    canvas.style.height = totalH + 'px';
+    svg.setAttribute('width', totalW);
+    svg.setAttribute('height', totalH);
+
+    // shift everything by SIDE_PAD so nothing sits at x=0
+    var shiftX = SIDE_PAD;
+
+    // ---- generation row labels ----
+    var genNames = ['1. Nesil','2. Nesil','3. Nesil','4. Nesil','5. Nesil','6. Nesil','7. Nesil'];
+    for (var g=0; g<=maxGen; g++){
+      var lbl = document.createElement('div');
+      lbl.className = 'gen-row-label';
+      lbl.style.left = '4px';
+      lbl.style.top = (ROW_TOP_PAD + g*(CARD_H+V_GAP) + CARD_H/2 - 12) + 'px';
+      lbl.textContent = genNames[g] || ((g+1) + '. Nesil');
+      canvas.appendChild(lbl);
+    }
+
+    // ---- connector lines (draw first, under cards) ----
+    persons.forEach(function(p){
+      var pos = positions[p.id];
+      if (!pos) return;
+      var spouse = getSpouse(p.id);
+      if (spouse && positions[spouse.id] && p.id < spouse.id){
+        var sp1 = positions[p.id], sp2 = positions[spouse.id];
+        var y = sp1.y + CARD_H/2;
+        var x1 = sp1.x + CARD_W + shiftX, x2 = sp2.x + shiftX;
+        var lineEl = document.createElementNS('http://www.w3.org/2000/svg','line');
+        lineEl.setAttribute('x1', x1); lineEl.setAttribute('y1', y);
+        lineEl.setAttribute('x2', x2); lineEl.setAttribute('y2', y);
+        lineEl.setAttribute('stroke', '#C9962C'); lineEl.setAttribute('stroke-width','2.5');
+        svg.appendChild(lineEl);
+      }
+    });
+
+    // parent -> children curved connectors, drawn once per couple/parent unit
+    var handled = {};
+    persons.forEach(function(p){
+      var pos = positions[p.id];
+      if (!pos) return;
+      var spouse = getSpouse(p.id);
+      var key = spouse ? [p.id, spouse.id].sort().join('|') : p.id;
+      if (handled[key]) return;
+      handled[key] = true;
+      var children = getCoupleChildren(p.id, spouse ? spouse.id : null).filter(function(c){ return positions[c.id]; });
+      if (children.length === 0) return;
+
+      var midX = spouse && positions[spouse.id]
+        ? (pos.x + CARD_W + (positions[spouse.id].x - (pos.x + CARD_W)) / 2) + shiftX
+        : (pos.x + CARD_W/2) + shiftX;
+      var midY = pos.y + CARD_H + shiftX*0; // shiftX*0 no-op, keep y untouched by horizontal shift
+      var busY = midY + V_GAP * 0.42;
+
+      // stub down from the couple/parent to the bus line
+      var stub = document.createElementNS('http://www.w3.org/2000/svg','path');
+      stub.setAttribute('d', 'M' + midX + ' ' + midY + ' L' + midX + ' ' + busY);
+      stub.setAttribute('stroke', '#C9962C'); stub.setAttribute('stroke-width','2'); stub.setAttribute('fill','none');
+      svg.appendChild(stub);
+
+      children.forEach(function(child){
+        var cpos = positions[child.id];
+        var cSpouse = getSpouse(child.id);
+        var childCenterX;
+        if (cSpouse && positions[cSpouse.id]){
+          var a = cpos.x, b = positions[cSpouse.id].x;
+          childCenterX = (Math.min(a,b) + CARD_W + Math.max(a,b)) / 2 + shiftX;
+          if (child.id > cSpouse.id) childCenterX = (a + CARD_W/2) + shiftX; // fallback, avoid double
+        } else {
+          childCenterX = cpos.x + CARD_W/2 + shiftX;
+        }
+        var childTopY = cpos.y;
+        var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        var c1y = busY + (childTopY - busY) * 0.35;
+        var c2y = busY + (childTopY - busY) * 0.75;
+        var d = 'M' + midX + ' ' + busY +
+                ' C ' + midX + ' ' + c1y + ', ' + childCenterX + ' ' + c2y + ', ' + childCenterX + ' ' + childTopY;
+        path.setAttribute('d', d);
+        path.setAttribute('stroke', '#C9962C'); path.setAttribute('stroke-width','2'); path.setAttribute('fill','none'); path.setAttribute('opacity','0.85');
+        svg.appendChild(path);
+      });
+    });
+
+    // ---- person cards ----
+    persons.forEach(function(p){
+      var pos = positions[p.id];
+      if (!pos) return;
+      var accent = colorFor(p.fatherId && p.motherId ? (p.fatherId+p.motherId) : p.id);
+      // Use a per-person color so siblings share a hue via their parents, else derive from own id
+      accent = colorFor(p.id);
+      var card = document.createElement('div');
+      card.className = 'person-card' + (p.deathDate ? ' pc-deceased' : '');
+      card.style.left = (pos.x + shiftX) + 'px';
+      card.style.top = pos.y + 'px';
+      card.style.setProperty('--accent', accent);
+      card.style.setProperty('--accent-tint', tint(accent));
+      card.dataset.id = p.id;
+      card.innerHTML =
+        '<div class="pc-avatar">' +
+          (p.photo ? '<img src="'+p.photo+'" alt="">' : '<span class="pc-initial">'+initial(p.name)+'</span>') +
+        '</div>' +
+        '<div class="pc-name">'+escapeHtml(p.name)+'</div>' +
+        '<div class="pc-dates">'+ (lifeSpan(p) || '&nbsp;') +'</div>' +
+        (p.deathDate ? '<div class="pc-deceased-tag">Aramızdan ayrıldı</div>' : '');
+      card.addEventListener('click', function(){ openProfile(p.id); });
+      canvas.appendChild(card);
+    });
+
+    // spouse heart badges
+    handled = {};
+    persons.forEach(function(p){
+      var spouse = getSpouse(p.id);
+      if (!spouse || !positions[p.id] || !positions[spouse.id]) return;
+      var key = [p.id, spouse.id].sort().join('|');
+      if (handled[key]) return;
+      handled[key] = true;
+      var left = byId[key.split('|')[0]], right = byId[key.split('|')[1]];
+      var leftPos = positions[left.id];
+      var heart = document.createElement('div');
+      heart.className = 'spouse-heart';
+      heart.style.left = (leftPos.x + CARD_W - 11 + shiftX) + 'px';
+      heart.style.top = (leftPos.y + CARD_H/2 - 11) + 'px';
+      heart.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.7-10-9.3C.6 8.4 2.4 5 6 5c2 0 3.4 1.1 4 2.2C10.6 6.1 12 5 14 5c3.6 0 5.4 3.4 4 6.7C19.5 16.3 12 21 12 21z"/></svg>';
+      canvas.appendChild(heart);
+    });
+
+    updateTransform();
+  }
+
+  function escapeHtml(s){
+    return String(s||'').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  // ================= PAN / ZOOM =================
+  function updateTransform(){
+    var canvas = document.getElementById('treeCanvas');
+    canvas.style.transform = 'translate(' + pan.x + 'px,' + pan.y + 'px) scale(' + zoom + ')';
+    document.getElementById('zoomPct').textContent = Math.round(zoom * 100) + '%';
+  }
+  function zoomBy(delta, cx, cy){
+    var vp = document.getElementById('viewport');
+    var rect = vp.getBoundingClientRect();
+    var px = cx != null ? cx - rect.left : rect.width/2;
+    var py = cy != null ? cy - rect.top : rect.height/2;
+    var oldZoom = zoom;
+    zoom = Math.min(2.4, Math.max(0.25, zoom + delta));
+    var scaleRatio = zoom / oldZoom;
+    pan.x = px - (px - pan.x) * scaleRatio;
+    pan.y = py - (py - pan.y) * scaleRatio;
+    updateTransform();
+  }
+  function resetView(){
+    var vp = document.getElementById('viewport');
+    var canvas = document.getElementById('treeCanvas');
+    var rect = vp.getBoundingClientRect();
+    var cw = parseFloat(canvas.style.width) || rect.width;
+    zoom = Math.min(1, rect.width / (cw + 100));
+    if (!isFinite(zoom) || zoom <= 0) zoom = 1;
+    pan.x = (rect.width - cw * zoom) / 2;
+    pan.y = 40;
+    updateTransform();
+  }
+
+  function setupPanZoom(){
+    var vp = document.getElementById('viewport');
+    var dragging = false, lastX = 0, lastY = 0, moved = false;
+
+    vp.addEventListener('mousedown', function(e){
+      if (e.target.closest('.person-card')) return;
+      dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY;
+      vp.classList.add('grabbing');
+    });
+    window.addEventListener('mousemove', function(e){
+      if (!dragging) return;
+      var dx = e.clientX - lastX, dy = e.clientY - lastY;
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
+      pan.x += dx; pan.y += dy; lastX = e.clientX; lastY = e.clientY;
+      updateTransform();
+    });
+    window.addEventListener('mouseup', function(){ dragging = false; vp.classList.remove('grabbing'); });
+
+    vp.addEventListener('wheel', function(e){
+      e.preventDefault();
+      zoomBy(e.deltaY > 0 ? -0.1 : 0.1, e.clientX, e.clientY);
+    }, { passive:false });
+
+    // touch: single-finger pan, two-finger pinch zoom
+    var touchStartDist = 0, touchStartZoom = 1, lastTX = 0, lastTY = 0;
+    vp.addEventListener('touchstart', function(e){
+      if (e.touches.length === 1){
+        lastTX = e.touches[0].clientX; lastTY = e.touches[0].clientY;
+      } else if (e.touches.length === 2){
+        touchStartDist = touchDist(e.touches);
+        touchStartZoom = zoom;
+      }
+    }, { passive:true });
+    vp.addEventListener('touchmove', function(e){
+      if (e.touches.length === 1){
+        var dx = e.touches[0].clientX - lastTX, dy = e.touches[0].clientY - lastTY;
+        pan.x += dx; pan.y += dy;
+        lastTX = e.touches[0].clientX; lastTY = e.touches[0].clientY;
+        updateTransform();
+      } else if (e.touches.length === 2){
+        e.preventDefault();
+        var dist = touchDist(e.touches);
+        zoom = Math.min(2.4, Math.max(0.25, touchStartZoom * (dist / touchStartDist)));
+        updateTransform();
+      }
+    }, { passive:false });
+
+    function touchDist(t){
+      var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+  }
+
+  function focusOnPerson(id){
+    var pos = positions[id];
+    if (!pos) return;
+    var vp = document.getElementById('viewport');
+    var rect = vp.getBoundingClientRect();
+    zoom = 1;
+    pan.x = rect.width/2 - (pos.x + SIDE_PAD + CARD_W/2) * zoom;
+    pan.y = rect.height/2 - (pos.y + CARD_H/2) * zoom;
+    updateTransform();
+    var card = document.querySelector('.person-card[data-id="'+id+'"]');
+    if (card){
+      card.classList.add('highlight');
+      setTimeout(function(){ card.classList.remove('highlight'); }, 2800);
+    }
+  }
+
+  // ================= PROFILE PANEL =================
+  function openProfile(id){
+    var p = byId[id];
+    if (!p) return;
+    var accent = colorFor(p.id);
+    var father = p.fatherId ? byId[p.fatherId] : null;
+    var mother = p.motherId ? byId[p.motherId] : null;
+    var spouse = p.spouseId ? byId[p.spouseId] : null;
+    var children = getChildren(p.id);
+
+    var html = '';
+    html += '<div class="profile-avatar-row">';
+    html += '<div class="profile-avatar" style="--accent:'+accent+'; --accent-tint:'+tint(accent)+'">' +
+      (p.photo ? '<img src="'+p.photo+'">' : '<span class="pc-initial">'+initial(p.name)+'</span>') + '</div>';
+    html += '<div><div class="profile-name">'+escapeHtml(p.name)+'</div>' +
+      '<div class="profile-role">'+(lifeSpan(p) || (p.gender==='M'?'Erkek':p.gender==='F'?'Kadın':'Aile Bireyi'))+'</div></div>';
+    html += '</div>';
+
+    html += fieldBlock('Doğum Tarihi', fmtDate(p.birthDate));
+    html += fieldBlock('Ölüm Tarihi', fmtDate(p.deathDate));
+    html += fieldBlock('Biyografi / Notlar', p.bio);
+
+    var linkChips = '';
+    if (father) linkChips += chipHtml(father, '👨 Baba: ');
+    if (mother) linkChips += chipHtml(mother, '👩 Anne: ');
+    if (spouse) linkChips += chipHtml(spouse, '💍 Eş: ');
+    children.forEach(function(c){ linkChips += chipHtml(c, '🧒 '); });
+    html += '<div class="profile-field"><div class="lbl">Aile Bağlantıları</div>' +
+      (linkChips ? '<div class="profile-links">'+linkChips+'</div>' : '<div class="val empty">Henüz bağlantı eklenmedi</div>') + '</div>';
+
+    html += '<div class="profile-actions">' +
+      '<button class="btn2 btn2-edit" onclick="openEditPersonForm(\''+p.id+'\')">✏️ Düzenle</button>' +
+      '<button class="btn2 btn2-delete" onclick="deletePerson(\''+p.id+'\')">🗑️ Sil</button>' +
+      '</div>';
+
+    document.getElementById('profileBody').innerHTML = html;
+    showPanel('profilePanel');
+  }
+  function fieldBlock(label, value){
+    return '<div class="profile-field"><div class="lbl">'+label+'</div><div class="val'+(value?'':' empty')+'">'+(escapeHtml(value) || 'Belirtilmedi')+'</div></div>';
+  }
+  function chipHtml(person, prefix){
+    return '<span class="profile-link-chip" onclick="openProfile(\''+person.id+'\')">'+prefix+escapeHtml(person.name)+'</span>';
+  }
+  window.openProfile = openProfile;
+  window.deletePerson = function(id){
+    var p = byId[id];
+    if (!p) return;
+    if (!confirm('"'+p.name+'" kişisini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return;
+    persons = persons.filter(function(x){ return x.id !== id; });
+    persons.forEach(function(x){
+      if (x.fatherId === id) x.fatherId = '';
+      if (x.motherId === id) x.motherId = '';
+      if (x.spouseId === id) x.spouseId = '';
+    });
+    save();
+    closeSidePanel();
+    render();
+    showToast('🗑️ "'+p.name+'" silindi.');
+  };
+
+  // ================= EDIT / ADD FORM =================
+  window.openAddPersonForm = function(){
+    editingId = null;
+    pendingPhoto = '';
+    document.getElementById('editPanelTitle').textContent = 'Yeni Kişi Ekle';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-birth').value = '';
+    document.getElementById('f-death').value = '';
+    document.getElementById('f-bio').value = '';
+    setGender('');
+    populateRelationSelects(null);
+    document.getElementById('f-father').value = '';
+    document.getElementById('f-mother').value = '';
+    document.getElementById('f-spouse').value = '';
+    renderPhotoPreview('');
+    showPanel('editPanel');
+  };
+  window.openEditPersonForm = function(id){
+    var p = byId[id];
+    if (!p) return;
+    editingId = id;
+    pendingPhoto = p.photo || '';
+    document.getElementById('editPanelTitle').textContent = 'Kişiyi Düzenle';
+    document.getElementById('f-name').value = p.name || '';
+    document.getElementById('f-birth').value = p.birthDate || '';
+    document.getElementById('f-death').value = p.deathDate || '';
+    document.getElementById('f-bio').value = p.bio || '';
+    setGender(p.gender || '');
+    populateRelationSelects(id);
+    document.getElementById('f-father').value = p.fatherId || '';
+    document.getElementById('f-mother').value = p.motherId || '';
+    document.getElementById('f-spouse').value = p.spouseId || '';
+    renderPhotoPreview(pendingPhoto);
+    showPanel('editPanel');
+  };
+  function populateRelationSelects(excludeId){
+    ['f-father','f-mother','f-spouse'].forEach(function(fieldId){
+      var sel = document.getElementById(fieldId);
+      var placeholder = sel.options[0];
+      sel.innerHTML = '';
+      sel.appendChild(placeholder);
+      persons.forEach(function(p){
+        if (p.id === excludeId) return;
+        var opt = document.createElement('option');
+        opt.value = p.id; opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
+    });
+  }
+  window.setGender = function(g){
+    document.querySelectorAll('#genderToggle button').forEach(function(b){
+      b.classList.toggle('active', b.dataset.g === g);
+    });
+    document.getElementById('genderToggle').dataset.value = g;
+  };
+  function renderPhotoPreview(dataUrl){
+    var box = document.getElementById('photoPreview');
+    box.innerHTML = dataUrl
+      ? '<img src="'+dataUrl+'">'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:24px;height:24px;color:var(--ink-soft);"><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M12 3v13M12 3l-4 4M12 3l4 4"/></svg>';
+  }
+  document.getElementById('photoUploadField').addEventListener('click', function(){ document.getElementById('photoInput').click(); });
+  document.getElementById('photoInput').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if (!file || !/^image\//.test(file.type)) return;
+    resizeImage(file, PHOTO_MAX_DIM, function(dataUrl){
+      pendingPhoto = dataUrl;
+      renderPhotoPreview(dataUrl);
+    });
+  });
+  function resizeImage(file, maxDim, cb){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        var cw = Math.round(w * scale), ch = Math.round(h * scale);
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+        cb(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  window.savePersonForm = function(){
+    var name = document.getElementById('f-name').value.trim();
+    if (!name){
+      showToast('⚠️ Lütfen ad soyad girin.');
+      return;
+    }
+    var gender = document.getElementById('genderToggle').dataset.value || '';
+    var birthDate = document.getElementById('f-birth').value;
+    var deathDate = document.getElementById('f-death').value;
+    var fatherId = document.getElementById('f-father').value;
+    var motherId = document.getElementById('f-mother').value;
+    var spouseId = document.getElementById('f-spouse').value;
+    var bio = document.getElementById('f-bio').value.trim();
+
+    var id = editingId || uid();
+    var existingIdx = persons.findIndex(function(p){ return p.id === id; });
+    var record = {
+      id: id, name: name, gender: gender, birthDate: birthDate, deathDate: deathDate,
+      photo: pendingPhoto, bio: bio, fatherId: fatherId, motherId: motherId, spouseId: spouseId
+    };
+
+    // clear old spouse link if it changed
+    if (editingId){
+      var old = byId[editingId];
+      if (old && old.spouseId && old.spouseId !== spouseId){
+        var oldSpouse = byId[old.spouseId];
+        if (oldSpouse && oldSpouse.spouseId === editingId) oldSpouse.spouseId = '';
+      }
+    }
+
+    if (existingIdx >= 0) persons[existingIdx] = record; else persons.push(record);
+    rebuildIndex();
+
+    // keep spouse link symmetric
+    if (spouseId && byId[spouseId]){
+      byId[spouseId].spouseId = id;
+    }
+
+    save();
+    closeSidePanel();
+    render();
+    showToast('✅ "'+name+'" kaydedildi.');
+    setTimeout(function(){ focusOnPerson(id); }, 60);
+  };
+
+  // ================= PANELS =================
+  function showPanel(panelId){
+    document.getElementById('overlayScrim').classList.add('open');
+    document.getElementById(panelId).classList.add('open');
+  }
+  window.closeSidePanel = function(){
+    document.getElementById('overlayScrim').classList.remove('open');
+    document.querySelectorAll('.side-panel').forEach(function(p){ p.classList.remove('open'); });
+  };
+
+  // ================= SEARCH =================
+  function setupSearch(){
+    var input = document.getElementById('searchInput');
+    var results = document.getElementById('searchResults');
+    input.addEventListener('input', function(){
+      var q = input.value.trim().toLowerCase();
+      if (!q){ results.classList.remove('open'); results.innerHTML=''; return; }
+      var matches = persons.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 8);
+      if (matches.length === 0){
+        results.innerHTML = '<div class="search-result-item" style="cursor:default; color:var(--ink-soft); font-weight:600;">Sonuç bulunamadı</div>';
+      } else {
+        results.innerHTML = matches.map(function(p){
+          var accent = colorFor(p.id);
+          var avatarHtml = p.photo
+            ? '<img class="mini-avatar" src="'+p.photo+'">'
+            : '<span class="mini-avatar" style="background:'+accent+'; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">'+initial(p.name)+'</span>';
+          return '<div class="search-result-item" data-id="'+p.id+'">'+avatarHtml+' '+escapeHtml(p.name)+'</div>';
+        }).join('');
+      }
+      results.classList.add('open');
+    });
+    results.addEventListener('click', function(e){
+      var item = e.target.closest('.search-result-item');
+      if (!item || !item.dataset.id) return;
+      focusOnPerson(item.dataset.id);
+      results.classList.remove('open');
+      input.value = '';
+    });
+    document.addEventListener('click', function(e){
+      if (!e.target.closest('.search-wrap')) results.classList.remove('open');
+    });
+  }
+
+  // ================= JSON BACKUP / RESTORE =================
+  window.exportJSON = function(){
+    var data = { persons: persons, exportedAt: new Date().toISOString(), app: 'baydogan-soyagaci', version: 1 };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'baydogan_soyagaci_yedek_' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast('💾 Yedek indirildi.');
+  };
+  document.getElementById('jsonImportInput').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        var data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data.persons)) throw new Error('Geçersiz dosya biçimi');
+        if (!confirm('Mevcut soyağacının üzerine bu yedek yüklenecek. Devam edilsin mi?')) return;
+        persons = data.persons;
+        rebuildIndex();
+        save();
+        render();
+        showToast('✅ Yedek başarıyla geri yüklendi.');
+      } catch(err){
+        alert('Dosya okunamadı: geçerli bir soyağacı yedek dosyası (.json) seçtiğinizden emin olun.');
+      }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  // ================= INIT =================
+  function init(){
+    load();
+    setupPanZoom();
+    setupSearch();
+    render();
+    setTimeout(resetView, 30);
+    window.addEventListener('resize', function(){ /* keep current pan/zoom on resize */ });
+  }
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
