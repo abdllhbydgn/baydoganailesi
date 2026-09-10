@@ -334,6 +334,57 @@
   a:focus-visible, button:focus-visible, .member-photo:focus-visible, .dropzone:focus-visible{
     outline:2.5px solid var(--wine); outline-offset:3px;
   }
+
+  /* ---------- ADMIN LOGIN + FIREBASE UI (YENİ) ---------- */
+  .admin-toggle{
+    position:fixed; bottom:22px; left:22px; z-index:700; display:flex; align-items:center; gap:8px;
+    padding:10px 16px; border-radius:999px; border:none; background:var(--ink); color:#fff; font-weight:700;
+    font-size:12.5px; cursor:pointer; box-shadow:var(--shadow); font-family:var(--ff-body);
+  }
+  .admin-toggle.is-admin{ background:var(--forest); }
+  .admin-toggle svg{ width:15px; height:15px; }
+
+  .auth-scrim{
+    position:fixed; inset:0; background:rgba(35,34,43,0.5); z-index:800; opacity:0; pointer-events:none; transition:opacity .25s ease;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .auth-scrim.open{ opacity:1; pointer-events:auto; }
+  .auth-box{
+    background:var(--paper); border-radius:var(--radius-lg); padding:32px 30px; width:360px; max-width:100%;
+    box-shadow:var(--shadow); transform:translateY(14px); transition:transform .25s ease;
+  }
+  .auth-scrim.open .auth-box{ transform:translateY(0); }
+  .auth-box h3{ font-size:21px; margin-bottom:6px; }
+  .auth-box p{ font-size:13px; color:var(--ink-soft); margin:0 0 20px; line-height:1.55; }
+  .auth-box input{
+    width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--line); background:#fff;
+    font-size:14px; font-family:var(--ff-body); margin-bottom:12px; box-sizing:border-box;
+  }
+  .auth-box input:focus{ outline:none; border-color:var(--wine); }
+  .auth-error{ font-size:12.5px; color:var(--wine); margin:-4px 0 12px; display:none; }
+  .auth-error.show{ display:block; }
+  .auth-actions{ display:flex; gap:10px; margin-top:6px; }
+  .auth-actions button{ flex:1; padding:12px; border-radius:999px; border:none; font-weight:700; font-size:13.5px; cursor:pointer; font-family:var(--ff-body); }
+  .auth-cancel{ background:transparent; border:1.5px solid var(--line) !important; }
+  .auth-submit{ background:var(--wine); color:#fff; }
+  .auth-submit:hover{ background:var(--wine-deep); }
+  .auth-submit:disabled{ opacity:.6; cursor:default; }
+
+  .slot-delete{
+    position:absolute; top:8px; inset-inline-end:8px; width:26px; height:26px; border-radius:50%; border:none;
+    background:rgba(20,16,20,0.65); color:#fff; font-size:15px; cursor:pointer; opacity:0; transition:opacity .2s ease;
+    display:flex; align-items:center; justify-content:center; z-index:6;
+  }
+  .family-card:hover .slot-delete.hero-delete{ opacity:1; }
+  .member-photo:hover .slot-delete.avatar-delete{ opacity:1; }
+  .slot-delete.avatar-delete{ width:20px; height:20px; font-size:12px; top:2px; inset-inline-end:2px; }
+  .upload-spinner{
+    position:absolute; inset:0; background:rgba(20,16,20,0.5); display:none; align-items:center; justify-content:center;
+    color:#fff; font-size:12px; font-weight:700; z-index:8; border-radius:inherit; text-align:center; padding:6px;
+  }
+  .upload-spinner.show{ display:flex; }
+  .upload-spinner .spin{ width:20px; height:20px; border-radius:50%; border:2.5px solid rgba(255,255,255,0.35); border-top-color:#fff; animation:spin .8s linear infinite; margin-inline-end:6px; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -452,9 +503,70 @@
   </div>
 </footer>
 
+<!-- ═══ YENİ ═══ Yönetici girişi — fotoğraf yükleme/silme yalnızca giriş yapan aile üyesine açık.
+     Görüntüleme herkese açık kalıyor, sadece yükleme/silme kilitli. -->
+<button class="admin-toggle" id="adminToggle" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  <span id="adminToggleLabel">Yönetici Girişi</span>
+</button>
+
+<div class="auth-scrim" id="authScrim">
+  <div class="auth-box">
+    <h3>Yönetici Girişi</h3>
+    <p>Fotoğraf yükleyip silebilmek için aile hesabıyla giriş yapın. Sadece görüntülemek için girişe gerek yok.</p>
+    <input type="email" id="authEmail" placeholder="E-posta" autocomplete="username">
+    <input type="password" id="authPass" placeholder="Şifre" autocomplete="current-password">
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-actions">
+      <button type="button" class="auth-cancel" onclick="closeAuthModal()">Vazgeç</button>
+      <button type="button" class="auth-submit" id="authSubmitBtn" onclick="submitLogin()">Giriş Yap</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 <script>
 (function(){
-  // ---------------- Family data ----------------
+  'use strict';
+
+  // ================= FIREBASE SETUP =================
+  // ═══ KURULUM (buraya kendi Firebase proje bilgilerinizi girin) ═══
+  // 1) https://console.firebase.google.com → Proje ekle (örn. "baydogan-ailesi")
+  // 2) Build > Firestore Database > Create database (production mode) — kurallar için README'ye bakın
+  // 3) Build > Authentication > Get started > Sign-in method > Email/Password'ü etkinleştirin
+  // 4) Authentication > Users > aile için bir e-posta/şifre kullanıcısı ekleyin (yönetici girişi budur)
+  // 5) Project settings (dişli ikonu) > Genel > Uygulamalarınız > Web uygulaması ekle > aşağıdaki bilgileri buraya yapıştırın
+  // NOT: Firebase Storage kredi kartı (Blaze plan) gerektirdiği için KULLANILMIYOR — fotoğraflar
+  // küçültülüp doğrudan Firestore'a kaydediliyor, tamamen ücretsiz (Spark) planda çalışır.
+  var firebaseConfig = {
+    apiKey: "AIzaSyBcic9FE_KXJ-odFLSZWN3scQklzgBPheE",
+    authDomain: "baydogan-ailesi.firebaseapp.com",
+    projectId: "baydogan-ailesi",
+    storageBucket: "baydogan-ailesi.firebasestorage.app",
+    messagingSenderId: "133252108270",
+    appId: "1:133252108270:web:5f5df29bf3213fe6d088ff"
+  };
+
+  var fbReady = false, db = null, auth = null;
+  try {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('BURAYA_') === -1) {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      auth = firebase.auth();
+      fbReady = true;
+    } else {
+      console.warn('Firebase yapılandırması eksik — fotoğraflar buluta kaydedilmeyecek. index.html içindeki firebaseConfig alanını doldurun.');
+    }
+  } catch (e) {
+    console.error('Firebase başlatılamadı:', e);
+  }
+
+  var isAdmin = false;
+  var photos = []; // Firestore'dan gelen tüm fotoğraf belgeleri (canlı/realtime)
+
+  // ================= Family data ====================
   var FAMILY = [
     { id:'abdullah', name:'Abdullah Baydoğan', role:'Baba', color:'#2C3E55', tint:'#E7EAEE', bio:'Ailenin sakin ve güvenilir kalbi.' },
     { id:'ebru',     name:'Ebru Baydoğan',     role:'Anne', color:'#7C2D3F', tint:'#F3E4E7', bio:'Evimizin sıcaklığı, gülüşlerin kaynağı.' },
@@ -464,8 +576,9 @@
   ];
 
   function initial(name){ return name.trim().charAt(0).toUpperCase(); }
+  function byId(id){ for (var i=0;i<FAMILY.length;i++) if (FAMILY[i].id === id) return FAMILY[i]; return null; }
 
-  // ---------------- Render: hero mini seals ----------------
+  // ---------------- Render: hero mini seals (static, unrelated to photos) ----------------
   var heroSeals = document.getElementById('familyCardSeals');
   FAMILY.forEach(function(m){
     var s = document.createElement('div');
@@ -487,7 +600,7 @@
     chipsWrap.appendChild(a);
   });
 
-  // ---------------- Render: member cards ----------------
+  // ---------------- Render: member cards (skeleton; photo filled in by renderAllPhotos) ----------------
   var cardsWrap = document.getElementById('familyCards');
   FAMILY.forEach(function(m){
     var card = document.createElement('div');
@@ -496,10 +609,11 @@
     card.style.setProperty('--accent-tint', m.tint);
     card.id = 'member-' + m.id;
     card.innerHTML =
-      '<label class="member-photo" tabindex="0">' +
+      '<label class="member-photo" tabindex="0" id="memberPhoto-' + m.id + '">' +
         '<span class="seal">' + initial(m.name) + '</span>' +
         '<span class="photo-hint">Fotoğraf ekle</span>' +
         '<input type="file" accept="image/*" data-member="' + m.id + '" class="member-photo-input">' +
+        '<div class="upload-spinner" id="avatarSpinner-' + m.id + '"><span class="spin"></span></div>' +
       '</label>' +
       '<span class="member-role">' + m.role + '</span>' +
       '<h3>' + m.name + '</h3>' +
@@ -510,7 +624,7 @@
     cardsWrap.appendChild(card);
   });
 
-  // ---------------- Render: album blocks ----------------
+  // ---------------- Render: album blocks (skeleton grids; filled in by renderAllPhotos) ----------------
   var albumsWrap = document.getElementById('albumBlocks');
   FAMILY.forEach(function(m){
     var block = document.createElement('div');
@@ -528,17 +642,8 @@
         '<span>Toplu seçim desteklenir · JPG, PNG</span>' +
         '<input type="file" accept="image/*" multiple data-member="' + m.id + '" class="album-upload-input">' +
       '</label>' +
-      '<div class="photo-grid" id="grid-' + m.id + '" style="--accent:' + m.color + '; --accent-tint:' + m.tint + '"></div>';
+      '<div class="photo-grid" id="grid-' + m.id + '"></div>';
     albumsWrap.appendChild(block);
-
-    // seed a few placeholder frames so the grid never looks empty
-    var grid = block.querySelector('.photo-grid');
-    for (var i=0;i<3;i++){
-      var ph = document.createElement('div');
-      ph.className = 'frame placeholder-frame';
-      ph.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
-      grid.appendChild(ph);
-    }
   });
 
   // ---------------- Render: footer member links + seals ----------------
@@ -559,40 +664,204 @@
 
   document.getElementById('footerYear').textContent = new Date().getFullYear();
 
-  // ---------------- Photo upload helpers (client-side preview only) ----------------
-  function readAsURL(file, cb){
+  // ================= PHOTOS: Firestore + Storage =================
+  // Her fotoğraf belgesi: { id, type:'hero'|'avatar'|'album', memberId, url (base64), uploadedAt }
+  if (fbReady){
+    db.collection('photos').onSnapshot(function(snap){
+      photos = [];
+      snap.forEach(function(doc){
+        var d = doc.data(); d.id = doc.id; photos.push(d);
+      });
+      renderAllPhotos();
+    }, function(err){
+      console.error('Fotoğraflar okunamadı:', err);
+    });
+  }
+
+  function renderAllPhotos(){
+    // ---- hero ----
+    var hero = photos.filter(function(p){ return p.type === 'hero'; })
+      .sort(function(a,b){ return tsVal(b.uploadedAt) - tsVal(a.uploadedAt); })[0];
+    var heroCard = document.getElementById('familyCard');
+    var existingHeroImg = heroCard.querySelector('img.uploaded');
+    if (hero){
+      if (!existingHeroImg){ existingHeroImg = document.createElement('img'); existingHeroImg.className = 'uploaded'; heroCard.insertBefore(existingHeroImg, heroCard.querySelector('.family-card-scrim')); }
+      existingHeroImg.src = hero.url;
+      heroCard.classList.remove('empty');
+      ensureHeroDeleteBtn(hero);
+    } else {
+      if (existingHeroImg) existingHeroImg.remove();
+      heroCard.classList.add('empty');
+      var oldBtn = heroCard.querySelector('.hero-delete'); if (oldBtn) oldBtn.remove();
+    }
+
+    // ---- member avatars ----
+    FAMILY.forEach(function(m){
+      var avatar = photos.filter(function(p){ return p.type === 'avatar' && p.memberId === m.id; })
+        .sort(function(a,b){ return tsVal(b.uploadedAt) - tsVal(a.uploadedAt); })[0];
+      var photoEl = document.getElementById('memberPhoto-' + m.id);
+      if (!photoEl) return;
+      var seal = photoEl.querySelector('.seal');
+      var img = photoEl.querySelector('img');
+      var oldDel = photoEl.querySelector('.avatar-delete'); if (oldDel) oldDel.remove();
+      if (avatar){
+        if (seal) seal.remove();
+        if (!img){ img = document.createElement('img'); photoEl.insertBefore(img, photoEl.querySelector('.photo-hint')); }
+        img.src = avatar.url;
+        if (isAdmin){
+          var db2 = document.createElement('button');
+          db2.type = 'button'; db2.className = 'slot-delete avatar-delete'; db2.innerHTML = '&times;';
+          db2.setAttribute('aria-label','Fotoğrafı kaldır');
+          db2.addEventListener('click', function(ev){ ev.preventDefault(); ev.stopPropagation(); deletePhoto(avatar); });
+          photoEl.appendChild(db2);
+        }
+      } else {
+        if (img) img.remove();
+        if (!seal){ seal = document.createElement('span'); seal.className='seal'; photoEl.insertBefore(seal, photoEl.querySelector('.photo-hint')); seal.textContent = initial(m.name); }
+      }
+    });
+
+    // ---- album grids ----
+    FAMILY.forEach(function(m){
+      var grid = document.getElementById('grid-' + m.id);
+      if (!grid) return;
+      var albumPhotos = photos.filter(function(p){ return p.type === 'album' && p.memberId === m.id; })
+        .sort(function(a,b){ return tsVal(b.uploadedAt) - tsVal(a.uploadedAt); });
+      grid.innerHTML = '';
+      if (albumPhotos.length === 0){
+        for (var i=0;i<3;i++){
+          var ph = document.createElement('div');
+          ph.className = 'frame placeholder-frame';
+          ph.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+          grid.appendChild(ph);
+        }
+      } else {
+        albumPhotos.forEach(function(p){
+          var frame = document.createElement('div');
+          frame.className = 'frame';
+          frame.innerHTML = '<img src="' + p.url + '" alt="">' + (isAdmin ? '<button class="remove" type="button" aria-label="Kaldır">&times;</button>' : '');
+          if (isAdmin){
+            frame.querySelector('.remove').addEventListener('click', function(ev){
+              ev.preventDefault(); ev.stopPropagation();
+              deletePhoto(p);
+            });
+          }
+          grid.appendChild(frame);
+        });
+      }
+      var countEl = document.querySelector('[data-count-for="' + m.id + '"]');
+      if (countEl) countEl.textContent = albumPhotos.length + ' fotoğraf';
+    });
+  }
+  function tsVal(ts){
+    if (!ts) return 0;
+    if (typeof ts.toMillis === 'function') return ts.toMillis();
+    return 0;
+  }
+  function ensureHeroDeleteBtn(hero){
+    var heroCard = document.getElementById('familyCard');
+    var existing = heroCard.querySelector('.hero-delete');
+    if (!isAdmin){ if (existing) existing.remove(); return; }
+    if (existing) return;
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'slot-delete hero-delete'; btn.innerHTML = '&times;';
+    btn.setAttribute('aria-label','Fotoğrafı kaldır');
+    btn.addEventListener('click', function(ev){ ev.preventDefault(); ev.stopPropagation(); deletePhoto(hero); });
+    heroCard.appendChild(btn);
+  }
+
+  // ================= UPLOAD =================
+  // ═══ NOT ═══ Firebase Storage kredi kartı gerektirdiği (Blaze plan) için kullanılmıyor. Bunun
+  // yerine fotoğraflar küçültülüp doğrudan Firestore belgesine (base64 metin olarak) kaydediliyor.
+  // Firestore'da belge başına ~1MB sınır var, bu yüzden hedef ~700KB'ın altında kalacak şekilde
+  // otomatik olarak boyut/kalite düşürülüyor. Bu sınır, ortalama bir aile fotoğrafı için fazlasıyla
+  // yeterli çözünürlük sağlıyor.
+  function resizeToDataURL(file, maxDim, quality, cb){
     var reader = new FileReader();
-    reader.onload = function(e){ cb(e.target.result); };
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        var cw = Math.round(w * scale), ch = Math.round(h * scale);
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+        cb(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = function(){ cb(null); };
+      img.src = e.target.result;
+    };
     reader.readAsDataURL(file);
   }
-
-  function updateCount(memberId){
-    var grid = document.getElementById('grid-' + memberId);
-    var real = grid.querySelectorAll('.frame:not(.placeholder-frame)').length;
-    var el = document.querySelector('[data-count-for="' + memberId + '"]');
-    if (el) el.textContent = real + (real === 1 ? ' fotoğraf' : ' fotoğraf');
+  var MAX_DATA_URL_BYTES = 700000; // ~700KB — Firestore'un 1MB belge sınırının altında güvenli pay
+  function resizeWithinLimit(file, maxDim, cb, attempt){
+    attempt = attempt || 0;
+    var qualities = [0.78, 0.62, 0.48, 0.36];
+    var dims = [maxDim, Math.round(maxDim*0.75), Math.round(maxDim*0.55), Math.round(maxDim*0.4)];
+    if (attempt >= qualities.length){
+      cb(null); // hiçbir şekilde sığmadı
+      return;
+    }
+    resizeToDataURL(file, dims[attempt], qualities[attempt], function(dataUrl){
+      if (!dataUrl){ cb(null); return; }
+      if (dataUrl.length <= MAX_DATA_URL_BYTES || attempt === qualities.length - 1){
+        cb(dataUrl.length <= MAX_DATA_URL_BYTES ? dataUrl : null);
+      } else {
+        resizeWithinLimit(file, maxDim, cb, attempt + 1);
+      }
+    });
   }
 
-  function addPhotoToGrid(memberId, dataUrl){
-    var grid = document.getElementById('grid-' + memberId);
-    var placeholder = grid.querySelector('.placeholder-frame');
-    if (placeholder) placeholder.remove();
-    var frame = document.createElement('div');
-    frame.className = 'frame';
-    frame.innerHTML = '<img src="' + dataUrl + '" alt=""><button class="remove" type="button" aria-label="Kaldır">&times;</button>';
-    frame.querySelector('.remove').addEventListener('click', function(ev){
-      ev.preventDefault(); ev.stopPropagation();
-      frame.remove();
-      updateCount(memberId);
+  function uploadPhoto(file, type, memberId, spinnerEl){
+    if (!fbReady){
+      alert('Fotoğraf yükleme şu anda kullanılamıyor: site sahibinin Firebase ayarlarını tamamlaması gerekiyor.');
+      return;
+    }
+    if (!/^image\//.test(file.type)) return;
+    if (!isAdmin){ openAuthModal(function(){ uploadPhoto(file, type, memberId, spinnerEl); }); return; }
+    if (spinnerEl) spinnerEl.classList.add('show');
+    var maxDim = type === 'avatar' ? 500 : (type === 'hero' ? 1100 : 900);
+    resizeWithinLimit(file, maxDim, function(dataUrl){
+      if (!dataUrl){
+        if (spinnerEl) spinnerEl.classList.remove('show');
+        alert('Bu fotoğraf çok büyük/karmaşık, sıkıştırılamadı. Lütfen daha küçük veya daha basit bir fotoğraf deneyin.');
+        return;
+      }
+      // hero/avatar: tek slot — eskisini sil
+      var replacePromise = Promise.resolve();
+      if (type === 'hero' || type === 'avatar'){
+        var olds = photos.filter(function(p){ return p.type === type && (type === 'hero' || p.memberId === memberId); });
+        replacePromise = Promise.all(olds.map(function(p){ return deletePhotoSilent(p); }));
+      }
+      replacePromise.then(function(){
+        return db.collection('photos').add({
+          type: type, memberId: memberId || null, url: dataUrl,
+          uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      })
+        .then(function(){ if (spinnerEl) spinnerEl.classList.remove('show'); })
+        .catch(function(err){
+          console.error('Yükleme hatası:', err);
+          if (spinnerEl) spinnerEl.classList.remove('show');
+          alert('Fotoğraf yüklenemedi: ' + err.message);
+        });
     });
-    grid.insertBefore(frame, grid.firstChild);
-    updateCount(memberId);
+  }
+
+  function deletePhotoSilent(p){
+    return db.collection('photos').doc(p.id).delete();
+  }
+  function deletePhoto(p){
+    if (!isAdmin) return;
+    if (!confirm('Bu fotoğrafı kaldırmak istediğinize emin misiniz?')) return;
+    deletePhotoSilent(p).catch(function(err){ console.error(err); alert('Silinemedi: ' + err.message); });
   }
 
   function handleFiles(memberId, fileList){
+    var spinnerEl = null; // album grids don't have a single spinner slot; upload happens silently, grid updates on snapshot
     Array.prototype.forEach.call(fileList, function(file){
-      if (!/^image\//.test(file.type)) return;
-      readAsURL(file, function(url){ addPhotoToGrid(memberId, url); });
+      uploadPhoto(file, 'album', memberId, spinnerEl);
     });
   }
 
@@ -619,47 +888,84 @@
     input.addEventListener('change', function(){
       var memberId = input.getAttribute('data-member');
       if (!input.files || !input.files[0]) return;
-      readAsURL(input.files[0], function(url){
-        var photoEl = input.closest('.member-photo');
-        var seal = photoEl.querySelector('.seal');
-        if (seal) seal.remove();
-        var img = photoEl.querySelector('img');
-        if (!img){ img = document.createElement('img'); photoEl.insertBefore(img, photoEl.querySelector('.photo-hint')); }
-        img.src = url;
-      });
+      var spinnerEl = document.getElementById('avatarSpinner-' + memberId);
+      uploadPhoto(input.files[0], 'avatar', memberId, spinnerEl);
+      input.value = '';
     });
   });
 
   // hero big family photo
   var heroInput = document.getElementById('heroUploadInput');
-  var heroCard = document.getElementById('familyCard');
+  var heroCardEl = document.getElementById('familyCard');
   heroInput.addEventListener('change', function(){
     if (!heroInput.files || !heroInput.files[0]) return;
-    readAsURL(heroInput.files[0], function(url){
-      var img = heroCard.querySelector('img.uploaded');
-      if (!img){
-        img = document.createElement('img');
-        img.className = 'uploaded';
-        heroCard.insertBefore(img, heroCard.querySelector('.family-card-scrim'));
-      }
-      img.src = url;
-      heroCard.classList.remove('empty');
-    });
+    uploadPhoto(heroInput.files[0], 'hero', null, null);
+    heroInput.value = '';
   });
   ['dragenter','dragover'].forEach(function(evt){
-    heroCard.addEventListener(evt, function(e){ e.preventDefault(); heroCard.classList.add('empty'); });
+    heroCardEl.addEventListener(evt, function(e){ e.preventDefault(); if (heroCardEl.classList.contains('empty')) heroCardEl.classList.add('empty'); });
   });
-  heroCard.addEventListener('drop', function(e){
+  heroCardEl.addEventListener('drop', function(e){
     e.preventDefault();
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
-      readAsURL(e.dataTransfer.files[0], function(url){
-        var img = heroCard.querySelector('img.uploaded');
-        if (!img){ img = document.createElement('img'); img.className='uploaded'; heroCard.insertBefore(img, heroCard.querySelector('.family-card-scrim')); }
-        img.src = url;
-        heroCard.classList.remove('empty');
-      });
+      uploadPhoto(e.dataTransfer.files[0], 'hero', null, null);
     }
   });
+
+  // ================= ADMIN LOGIN =================
+  var pendingAfterLogin = null;
+  window.openAuthModal = function(onSuccess){
+    pendingAfterLogin = onSuccess || null;
+    document.getElementById('authError').classList.remove('show');
+    document.getElementById('authEmail').value = '';
+    document.getElementById('authPass').value = '';
+    document.getElementById('authScrim').classList.add('open');
+    setTimeout(function(){ document.getElementById('authEmail').focus(); }, 50);
+  };
+  window.closeAuthModal = function(){
+    document.getElementById('authScrim').classList.remove('open');
+    pendingAfterLogin = null;
+  };
+  window.submitLogin = function(){
+    if (!fbReady){ alert('Firebase ayarları tamamlanmadan giriş yapılamaz.'); return; }
+    var email = document.getElementById('authEmail').value.trim();
+    var pass = document.getElementById('authPass').value;
+    var errEl = document.getElementById('authError');
+    var btn = document.getElementById('authSubmitBtn');
+    if (!email || !pass){ errEl.textContent = 'Lütfen e-posta ve şifre girin.'; errEl.classList.add('show'); return; }
+    btn.disabled = true; btn.textContent = 'Giriş yapılıyor...';
+    auth.signInWithEmailAndPassword(email, pass).then(function(){
+      btn.disabled = false; btn.textContent = 'Giriş Yap';
+      closeAuthModal();
+      if (pendingAfterLogin){ var fn = pendingAfterLogin; pendingAfterLogin = null; fn(); }
+    }).catch(function(err){
+      btn.disabled = false; btn.textContent = 'Giriş Yap';
+      errEl.textContent = 'Giriş başarısız: e-posta ya da şifre hatalı.';
+      errEl.classList.add('show');
+      console.error(err);
+    });
+  };
+  document.getElementById('authPass').addEventListener('keydown', function(e){ if (e.key === 'Enter') submitLogin(); });
+
+  var adminToggle = document.getElementById('adminToggle');
+  var adminToggleLabel = document.getElementById('adminToggleLabel');
+  adminToggle.addEventListener('click', function(){
+    if (isAdmin){
+      if (confirm('Yönetici oturumunu kapatmak istiyor musunuz?')) auth.signOut();
+    } else {
+      openAuthModal(null);
+    }
+  });
+  if (fbReady){
+    auth.onAuthStateChanged(function(user){
+      isAdmin = !!user;
+      adminToggle.classList.toggle('is-admin', isAdmin);
+      adminToggleLabel.textContent = isAdmin ? 'Yönetici (Çıkış)' : 'Yönetici Girişi';
+      renderAllPhotos();
+    });
+  } else {
+    adminToggleLabel.textContent = 'Firebase Ayarlanmadı';
+  }
 
   // ---------------- Nav scroll state + mobile toggle ----------------
   var nav = document.getElementById('nav');
