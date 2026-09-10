@@ -399,6 +399,7 @@
   var byId = {};
   var pan = { x:0, y:0 }, zoom = 1;
   var editingId = null;    // person currently open in the edit form (null = adding new)
+  var pendingAutoLink = null; // { childId, role: 'father'|'mother' } — set by openAddParentForm, consumed by savePersonForm
   var pendingPhoto = '';   // base64 photo staged in the edit form
 
   // ================= SEED DATA (first run only) =================
@@ -850,11 +851,13 @@
 
     var linkChips = '';
     if (father) linkChips += chipHtml(father, '👨 Baba: ');
+    else linkChips += '<span class="profile-link-chip" style="border-style:dashed;" onclick="openAddParentForm(\''+p.id+'\', \'father\')">➕ Baba Ekle</span>';
     if (mother) linkChips += chipHtml(mother, '👩 Anne: ');
+    else linkChips += '<span class="profile-link-chip" style="border-style:dashed;" onclick="openAddParentForm(\''+p.id+'\', \'mother\')">➕ Anne Ekle</span>';
     if (spouse) linkChips += chipHtml(spouse, '💍 Eş: ');
     children.forEach(function(c){ linkChips += chipHtml(c, '🧒 '); });
     html += '<div class="profile-field"><div class="lbl">Aile Bağlantıları</div>' +
-      (linkChips ? '<div class="profile-links">'+linkChips+'</div>' : '<div class="val empty">Henüz bağlantı eklenmedi</div>') + '</div>';
+      '<div class="profile-links">'+linkChips+'</div></div>';
 
     html += '<div class="profile-actions">' +
       '<button class="btn2 btn2-edit" onclick="openEditPersonForm(\''+p.id+'\')">✏️ Düzenle</button>' +
@@ -890,6 +893,7 @@
   // ================= EDIT / ADD FORM =================
   window.openAddPersonForm = function(){
     editingId = null;
+    pendingAutoLink = null;
     pendingPhoto = '';
     document.getElementById('editPanelTitle').textContent = 'Yeni Kişi Ekle';
     document.getElementById('f-name').value = '';
@@ -904,10 +908,24 @@
     renderPhotoPreview('');
     showPanel('editPanel');
   };
+  // ═══ YENİ ═══ Bir kişinin profilinde "➕ Baba Ekle" / "➕ Anne Ekle" ile açılır. Yeni kişiyi
+  // eklemenin dışında hiçbir ekstra adım gerektirmez — kaydedilince o kişi otomatik olarak
+  // görüntülenen kişinin babası/annesi olarak bağlanır, ayrıca açılır listeden seçmene gerek kalmaz. /
+  // ═══ NEW ═══ Opened from a person's profile via "➕ Add Father" / "➕ Add Mother". Requires no
+  // extra step beyond adding the new person — on save, that person is automatically linked as the
+  // viewed person's father/mother, no need to pick them from the dropdown yourself.
+  window.openAddParentForm = function(childId, role){
+    pendingAutoLink = { childId: childId, role: role };
+    openAddPersonForm();
+    var child = byId[childId];
+    document.getElementById('editPanelTitle').textContent = (role === 'father' ? 'Baba Ekle' : 'Anne Ekle') + (child ? ' — ' + child.name : '');
+    if (role === 'father') setGender('M'); else setGender('F');
+  };
   window.openEditPersonForm = function(id){
     var p = byId[id];
     if (!p) return;
     editingId = id;
+    pendingAutoLink = null;
     pendingPhoto = p.photo || '';
     document.getElementById('editPanelTitle').textContent = 'Kişiyi Düzenle';
     document.getElementById('f-name').value = p.name || '';
@@ -1013,11 +1031,23 @@
       byId[spouseId].spouseId = id;
     }
 
+    // ═══ YENİ ═══ "Baba/Anne Ekle" akışından geldiyse, yeni kaydedilen kişiyi otomatik olarak
+    // ilgili çocuğun babası/annesi olarak bağla. /
+    // ═══ NEW ═══ If this came from the "Add Father/Mother" flow, automatically link the
+    // newly-saved person as that child's father/mother.
+    var focusId = id;
+    if (pendingAutoLink && pendingAutoLink.childId && byId[pendingAutoLink.childId]){
+      var child = byId[pendingAutoLink.childId];
+      if (pendingAutoLink.role === 'father') child.fatherId = id; else child.motherId = id;
+      focusId = pendingAutoLink.childId;
+    }
+    pendingAutoLink = null;
+
     save();
     closeSidePanel();
     render();
     showToast('✅ "'+name+'" kaydedildi.');
-    setTimeout(function(){ focusOnPerson(id); }, 60);
+    setTimeout(function(){ focusOnPerson(focusId); openProfile(focusId); }, 60);
   };
 
   // ================= PANELS =================
