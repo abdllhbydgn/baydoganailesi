@@ -532,8 +532,19 @@
     roots.forEach(function(p){
       if (visited[p.id]) return;
       var spouse = getSpouse(p.id);
-      // only start a unit from a root if its spouse (if any) is also unparented-or-absent;
-      // otherwise let the spouse's own pass pick it up naturally via layoutUnit's visited-marking
+      // ═══ DÜZELTİLDİ ═══ Bir kişinin kendi ebeveyni yoksa bile, EŞİNİN ebeveyni varsa bu kişiyi
+      // bağımsız bir "kök" olarak işlemeyiz — eşin soy hattı zaten bu çifti (ve bu kişiyi) kendi
+      // geçişinde bulup doğru nesle yerleştirecek. Bu olmadan, örn. eşi ebeveynsiz biri, kendi
+      // eşinin (gerçek) babasını "koparıp" ayrı/bağlantısız gösteriyordu. /
+      // ═══ FIXED ═══ Even if a person has no parents of their own, if their SPOUSE has parents
+      // recorded, we do NOT treat this person as an independent root — the spouse's ancestor line
+      // will already reach this couple (and this person) during its own top-down traversal and
+      // place them at the correct generation. Without this, a parentless spouse would "steal" their
+      // partner away from the partner's real father/mother, showing that parent as disconnected.
+      if (spouse){
+        var spouseHasParents = (spouse.fatherId && byId[spouse.fatherId]) || (spouse.motherId && byId[spouse.motherId]);
+        if (spouseHasParents) return;
+      }
       var layout = layoutUnit(p.id);
       if (layout) rootUnits.push(layout);
     });
