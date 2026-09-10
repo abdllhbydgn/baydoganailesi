@@ -203,6 +203,31 @@
   }
   .field textarea{ resize:vertical; min-height:70px; }
   .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  /* ---------- Person picker (isim yazarak filtreli arama) ---------- */
+  .pp-wrap{ position:relative; }
+  .pp-input-row{ display:flex; align-items:center; gap:6px; }
+  .pp-input-row input[type=text]{ flex:1; }
+  .pp-clear{
+    flex-shrink:0; width:36px; height:36px; border-radius:9px; border:1.5px solid var(--line); background:#fff;
+    color:var(--ink-soft); font-size:15px; cursor:pointer; display:none; align-items:center; justify-content:center;
+  }
+  .pp-clear.show{ display:flex; }
+  .pp-selected-tag{
+    display:none; align-items:center; gap:8px; padding:8px 10px; background:var(--paper-deep); border-radius:9px;
+    font-size:13.5px; font-weight:700; margin-top:6px;
+  }
+  .pp-selected-tag.show{ display:flex; }
+  .pp-dropdown{
+    position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid var(--line);
+    border-radius:10px; box-shadow:var(--shadow); max-height:220px; overflow-y:auto; z-index:30; display:none;
+  }
+  .pp-dropdown.open{ display:block; }
+  .pp-item{ padding:9px 12px; font-size:13.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:9px; }
+  .pp-item:hover{ background:var(--paper); }
+  .pp-item .pp-avatar{ width:22px; height:22px; border-radius:50%; flex-shrink:0; background:var(--wine); color:#fff; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .pp-item .pp-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .pp-empty{ padding:12px; font-size:12.5px; color:var(--ink-soft); text-align:center; }
   .photo-upload-field{
     display:flex; align-items:center; gap:14px; padding:12px; border:1.5px dashed var(--line); border-radius:12px; cursor:pointer; background:#fff;
   }
@@ -322,7 +347,13 @@
   <div class="sp-body">
     <div class="field">
       <label id="parentChoiceLabel">Bu kişi ağaçta zaten var mı?</label>
-      <select id="parentChoiceSelect"><option value="">— Listeden seç —</option></select>
+      <div class="pp-wrap" id="parentChoice-picker" data-key="parentChoice">
+        <div class="pp-input-row">
+          <input type="text" id="parentChoice-search" placeholder="İsim yazarak arayın...">
+          <button type="button" class="pp-clear" id="parentChoice-clear" onclick="ppClear('parentChoice')">&times;</button>
+        </div>
+        <div class="pp-dropdown" id="parentChoice-dropdown"></div>
+      </div>
     </div>
     <div class="save-row">
       <button class="save-btn" style="background:var(--forest);" onclick="linkExistingAsParent()">🔗 Seçileni Bağla</button>
@@ -385,16 +416,48 @@
       </div>
     </div>
     <div class="field">
+      <label>Nesil (isteğe bağlı — boş bırakılırsa Baba/Anne bağlantısından otomatik hesaplanır)</label>
+      <select id="f-generation">
+        <option value="">— Otomatik —</option>
+        <option value="1">1. Nesil</option>
+        <option value="2">2. Nesil</option>
+        <option value="3">3. Nesil</option>
+        <option value="4">4. Nesil</option>
+        <option value="5">5. Nesil</option>
+        <option value="6">6. Nesil</option>
+        <option value="7">7. Nesil</option>
+        <option value="8">8. Nesil</option>
+      </select>
+    </div>
+    <div class="field">
       <label id="f-father-label">Baba (bu kişinin babası)</label>
-      <select id="f-father"><option value="">— Yok / Bilinmiyor —</option></select>
+      <div class="pp-wrap" id="f-father-picker" data-key="father">
+        <div class="pp-input-row">
+          <input type="text" id="f-father-search" placeholder="İsim yazarak arayın...">
+          <button type="button" class="pp-clear" id="f-father-clear" onclick="ppClear('father')">&times;</button>
+        </div>
+        <div class="pp-dropdown" id="f-father-dropdown"></div>
+      </div>
     </div>
     <div class="field">
       <label id="f-mother-label">Anne (bu kişinin annesi)</label>
-      <select id="f-mother"><option value="">— Yok / Bilinmiyor —</option></select>
+      <div class="pp-wrap" id="f-mother-picker" data-key="mother">
+        <div class="pp-input-row">
+          <input type="text" id="f-mother-search" placeholder="İsim yazarak arayın...">
+          <button type="button" class="pp-clear" id="f-mother-clear" onclick="ppClear('mother')">&times;</button>
+        </div>
+        <div class="pp-dropdown" id="f-mother-dropdown"></div>
+      </div>
     </div>
     <div class="field">
       <label id="f-spouse-label">Eş (bu kişinin eşi)</label>
-      <select id="f-spouse"><option value="">— Yok —</option></select>
+      <div class="pp-wrap" id="f-spouse-picker" data-key="spouse">
+        <div class="pp-input-row">
+          <input type="text" id="f-spouse-search" placeholder="İsim yazarak arayın...">
+          <button type="button" class="pp-clear" id="f-spouse-clear" onclick="ppClear('spouse')">&times;</button>
+        </div>
+        <div class="pp-dropdown" id="f-spouse-dropdown"></div>
+      </div>
     </div>
     <div class="field">
       <label>Biyografi / Notlar</label>
@@ -598,8 +661,16 @@
     var unitX = xStart + (layout.width - layout.unitWidth) / 2;
     var cx = unitX;
     layout.ids.forEach(function(id){
-      positions[id] = { x: cx, y: ROW_TOP_PAD + gen * (CARD_H + V_GAP) };
-      generations[id] = gen;
+      // ═══ YENİ ═══ Bir kişide elle "Nesil" seçilmişse, otomatik hesaplanan satır yerine o
+      // kullanılır — kart doğru satırda görünür (bağlantı çizgisi hâlâ Baba/Anne alanına bağlıdır). /
+      // ═══ NEW ═══ If a person has a manually-set "Generation", it's used instead of the
+      // auto-computed row — the card appears on the right row (the connector line still depends
+      // on the Father/Mother field being set).
+      var person = byId[id];
+      var effectiveGen = (person && person.generation) ? (person.generation - 1) : gen;
+      if (effectiveGen > maxGen) maxGen = effectiveGen;
+      positions[id] = { x: cx, y: ROW_TOP_PAD + effectiveGen * (CARD_H + V_GAP) };
+      generations[id] = effectiveGen;
       cx += CARD_W + COUPLE_GAP;
     });
     var childrenX = xStart + (layout.width - layout.childrenWidth) / 2;
@@ -882,6 +953,7 @@
     html += '</div>';
 
     html += fieldBlock('Doğum Tarihi', fmtDate(p.birthDate));
+    if (p.generation) html += fieldBlock('Nesil (elle ayarlandı)', p.generation + '. Nesil');
     html += fieldBlock('Ölüm Tarihi', fmtDate(p.deathDate));
     html += fieldBlock('Biyografi / Notlar', p.bio);
 
@@ -936,11 +1008,9 @@
     document.getElementById('f-birth').value = '';
     document.getElementById('f-death').value = '';
     document.getElementById('f-bio').value = '';
+    document.getElementById('f-generation').value = '';
     setGender('');
-    populateRelationSelects(null);
-    document.getElementById('f-father').value = '';
-    document.getElementById('f-mother').value = '';
-    document.getElementById('f-spouse').value = '';
+    ppSetup('father', null); ppSetup('mother', null); ppSetup('spouse', null);
     renderPhotoPreview('');
     updateRelationLabels();
     showPanel('editPanel');
@@ -956,25 +1026,19 @@
     var child = byId[childId];
     var roleLabel = role === 'father' ? 'Baba' : 'Anne';
     document.getElementById('parentChoiceTitle').textContent = (child ? child.name : '') + ' — ' + roleLabel + ' Ekle';
-    document.getElementById('parentChoiceLabel').textContent = (child ? child.name : 'Bu kişi') + '\u2019nin ' + roleLabel.toLowerCase() + 'sı ağaçta zaten var mı?';
+    document.getElementById('parentChoiceLabel').textContent = (child ? child.name : 'Bu kişi') + '\u2019nin ' + roleLabel.toLowerCase() + 'sı ağaçta zaten var mı? İsim yazarak arayın.';
     // Döngü önlemek için: çocuğun kendisi ve tüm altsoyu listeden hariç tutulur /
     // Prevent cycles: the child themself and all their descendants are excluded from the list
     var exclude = {}; exclude[childId] = true;
     (function collectDescendants(id){
       getChildren(id).forEach(function(c){ if (!exclude[c.id]){ exclude[c.id] = true; collectDescendants(c.id); } });
     })(childId);
-    var sel = document.getElementById('parentChoiceSelect');
-    sel.innerHTML = '<option value="">— Listeden seç —</option>';
-    persons.filter(function(p){ return !exclude[p.id]; }).forEach(function(p){
-      var opt = document.createElement('option');
-      opt.value = p.id; opt.textContent = p.name;
-      sel.appendChild(opt);
-    });
+    ppSetup('parentChoice', exclude);
     showPanel('parentChoicePanel');
   };
   window.linkExistingAsParent = function(){
-    var selectedId = document.getElementById('parentChoiceSelect').value;
-    if (!selectedId){ showToast('⚠️ Lütfen listeden bir kişi seçin.'); return; }
+    var selectedId = ppValues.parentChoice;
+    if (!selectedId){ showToast('⚠️ Lütfen isim yazıp listeden bir kişi seçin.'); return; }
     if (!pendingAutoLink) return;
     var child = byId[pendingAutoLink.childId];
     if (!child) return;
@@ -1008,29 +1072,96 @@
     document.getElementById('f-birth').value = p.birthDate || '';
     document.getElementById('f-death').value = p.deathDate || '';
     document.getElementById('f-bio').value = p.bio || '';
+    document.getElementById('f-generation').value = p.generation || '';
     setGender(p.gender || '');
-    populateRelationSelects(id);
-    document.getElementById('f-father').value = p.fatherId || '';
-    document.getElementById('f-mother').value = p.motherId || '';
-    document.getElementById('f-spouse').value = p.spouseId || '';
+    var selfExclude = {}; selfExclude[id] = true;
+    ppSetup('father', selfExclude, p.fatherId);
+    ppSetup('mother', selfExclude, p.motherId);
+    ppSetup('spouse', selfExclude, p.spouseId);
     renderPhotoPreview(pendingPhoto);
     updateRelationLabels();
     showPanel('editPanel');
   };
-  function populateRelationSelects(excludeId){
-    ['f-father','f-mother','f-spouse'].forEach(function(fieldId){
-      var sel = document.getElementById(fieldId);
-      var placeholder = sel.options[0];
-      sel.innerHTML = '';
-      sel.appendChild(placeholder);
-      persons.forEach(function(p){
-        if (p.id === excludeId) return;
-        var opt = document.createElement('option');
-        opt.value = p.id; opt.textContent = p.name;
-        sel.appendChild(opt);
-      });
-    });
+
+  // ================= PERSON PICKER (isim yazarak filtreli arama) =================
+  // ═══ YENİ ═══ Baba/Anne/Eş ve "zaten var mı" alanları artık uzun, kullanışsız bir açılır liste
+  // değil — isim yazdıkça anında filtrelenen bir arama kutusu. Ağaç büyüdükçe (onlarca kişi) doğru
+  // kişiyi bulmak çok daha kolay oluyor. /
+  // ═══ NEW ═══ The Father/Mother/Spouse and "already in tree?" fields are no longer a long,
+  // unwieldy dropdown — they're a live-filtering search box as you type. Much easier to find the
+  // right person as the tree grows to dozens of people.
+  var ppValues = { father: '', mother: '', spouse: '', parentChoice: '' };
+  var ppExcludeSets = { father: null, mother: null, spouse: null, parentChoice: null };
+
+  function ppSetup(key, excludeSet, initialId){
+    ppExcludeSets[key] = excludeSet || null;
+    ppValues[key] = initialId || '';
+    var input = document.getElementById(key === 'parentChoice' ? 'parentChoice-search' : 'f-' + key + '-search');
+    if (initialId && byId[initialId]){
+      input.value = byId[initialId].name;
+    } else {
+      input.value = '';
+    }
+    ppUpdateClearBtn(key);
+    document.getElementById((key === 'parentChoice' ? 'parentChoice' : 'f-' + key) + '-dropdown').classList.remove('open');
   }
+  function ppUpdateClearBtn(key){
+    var btn = document.getElementById(key === 'parentChoice' ? 'parentChoice-clear' : 'f-' + key + '-clear');
+    if (btn) btn.classList.toggle('show', !!ppValues[key]);
+  }
+  window.ppClear = function(key){
+    ppValues[key] = '';
+    var input = document.getElementById(key === 'parentChoice' ? 'parentChoice-search' : 'f-' + key + '-search');
+    input.value = '';
+    ppUpdateClearBtn(key);
+    input.focus();
+  };
+  function ppRenderResults(key, query){
+    var dropdownId = (key === 'parentChoice' ? 'parentChoice' : 'f-' + key) + '-dropdown';
+    var dropdown = document.getElementById(dropdownId);
+    var exclude = ppExcludeSets[key] || {};
+    var q = (query || '').trim().toLowerCase();
+    var matches = persons.filter(function(p){
+      if (exclude[p.id]) return false;
+      if (!q) return true;
+      return p.name.toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 40);
+    if (matches.length === 0){
+      dropdown.innerHTML = '<div class="pp-empty">' + (persons.length === 0 ? 'Ağaçta henüz kimse yok' : 'Eşleşen kişi yok — "Yeni Kişi Ekle" ile ekleyebilirsiniz') + '</div>';
+    } else {
+      dropdown.innerHTML = matches.map(function(p){
+        var av = p.photo ? '<img src="'+p.photo+'">' : initial(p.name);
+        return '<div class="pp-item" data-id="'+p.id+'" data-key="'+key+'"><span class="pp-avatar">'+av+'</span>' + escapeHtml(p.name) + '</div>';
+      }).join('');
+    }
+    dropdown.classList.add('open');
+  }
+  function ppSelect(key, id){
+    ppValues[key] = id;
+    var input = document.getElementById(key === 'parentChoice' ? 'parentChoice-search' : 'f-' + key + '-search');
+    input.value = byId[id] ? byId[id].name : '';
+    document.getElementById((key === 'parentChoice' ? 'parentChoice' : 'f-' + key) + '-dropdown').classList.remove('open');
+    ppUpdateClearBtn(key);
+  }
+  ['father', 'mother', 'spouse', 'parentChoice'].forEach(function(key){
+    var inputId = key === 'parentChoice' ? 'parentChoice-search' : 'f-' + key + '-search';
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    input.addEventListener('focus', function(){ ppRenderResults(key, input.value); });
+    input.addEventListener('input', function(){ ppValues[key] = ''; ppUpdateClearBtn(key); ppRenderResults(key, input.value); });
+    var dropdown = document.getElementById((key === 'parentChoice' ? 'parentChoice' : 'f-' + key) + '-dropdown');
+    dropdown.addEventListener('mousedown', function(e){
+      var item = e.target.closest('.pp-item');
+      if (!item) return;
+      e.preventDefault();
+      ppSelect(key, item.dataset.id);
+    });
+  });
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.pp-wrap')){
+      document.querySelectorAll('.pp-dropdown.open').forEach(function(d){ d.classList.remove('open'); });
+    }
+  });
   window.setGender = function(g){
     document.querySelectorAll('#genderToggle button').forEach(function(b){
       b.classList.toggle('active', b.dataset.g === g);
@@ -1092,16 +1223,19 @@
     var gender = document.getElementById('genderToggle').dataset.value || '';
     var birthDate = document.getElementById('f-birth').value;
     var deathDate = document.getElementById('f-death').value;
-    var fatherId = document.getElementById('f-father').value;
-    var motherId = document.getElementById('f-mother').value;
-    var spouseId = document.getElementById('f-spouse').value;
+    var fatherId = ppValues.father;
+    var motherId = ppValues.mother;
+    var spouseId = ppValues.spouse;
     var bio = document.getElementById('f-bio').value.trim();
+    var genField = document.getElementById('f-generation').value;
+    var generation = genField ? parseInt(genField, 10) : null;
 
     var id = editingId || uid();
     var existingIdx = persons.findIndex(function(p){ return p.id === id; });
     var record = {
       id: id, name: name, gender: gender, birthDate: birthDate, deathDate: deathDate,
-      photo: pendingPhoto, bio: bio, fatherId: fatherId, motherId: motherId, spouseId: spouseId
+      photo: pendingPhoto, bio: bio, fatherId: fatherId, motherId: motherId, spouseId: spouseId,
+      generation: generation
     };
 
     // clear old spouse link if it changed
