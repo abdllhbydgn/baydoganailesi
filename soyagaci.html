@@ -309,6 +309,31 @@
 
 <div class="overlay-scrim" id="overlayScrim" onclick="closeSidePanel()"></div>
 
+<!-- ═══ YENİ ═══ "Baba/Anne Ekle" tıklanınca önce bu ara adım açılır: kişi zaten eklenmişse listeden
+     seçip doğrudan bağlanır (yeni kayıt oluşturulmaz, mükerrer kişi/kopukluk önlenir); değilse
+     "Yeni Kişi Ekle" ile normal forma geçilir. -->
+<div class="side-panel" id="parentChoicePanel">
+  <div class="sp-header">
+    <h2 id="parentChoiceTitle">Ebeveyn Ekle</h2>
+    <button class="sp-close" onclick="closeSidePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sp-body">
+    <div class="field">
+      <label id="parentChoiceLabel">Bu kişi ağaçta zaten var mı?</label>
+      <select id="parentChoiceSelect"><option value="">— Listeden seç —</option></select>
+    </div>
+    <div class="save-row">
+      <button class="save-btn" style="background:var(--forest);" onclick="linkExistingAsParent()">🔗 Seçileni Bağla</button>
+    </div>
+    <div style="text-align:center; font-size:12px; color:var(--ink-soft); font-weight:800; margin:18px 0; text-transform:uppercase; letter-spacing:.06em;">veya</div>
+    <div class="save-row">
+      <button class="cancel-btn" onclick="proceedToNewParentForm()">➕ Yeni Kişi Ekle</button>
+    </div>
+  </div>
+</div>
+
 <!-- Profile view panel -->
 <div class="side-panel" id="profilePanel">
   <div class="sp-header">
@@ -360,15 +385,15 @@
       </div>
     </div>
     <div class="field">
-      <label>Baba</label>
+      <label id="f-father-label">Baba (bu kişinin babası)</label>
       <select id="f-father"><option value="">— Yok / Bilinmiyor —</option></select>
     </div>
     <div class="field">
-      <label>Anne</label>
+      <label id="f-mother-label">Anne (bu kişinin annesi)</label>
       <select id="f-mother"><option value="">— Yok / Bilinmiyor —</option></select>
     </div>
     <div class="field">
-      <label>Eş</label>
+      <label id="f-spouse-label">Eş (bu kişinin eşi)</label>
       <select id="f-spouse"><option value="">— Yok —</option></select>
     </div>
     <div class="field">
@@ -906,18 +931,58 @@
     document.getElementById('f-mother').value = '';
     document.getElementById('f-spouse').value = '';
     renderPhotoPreview('');
+    updateRelationLabels();
     showPanel('editPanel');
   };
-  // ═══ YENİ ═══ Bir kişinin profilinde "➕ Baba Ekle" / "➕ Anne Ekle" ile açılır. Yeni kişiyi
-  // eklemenin dışında hiçbir ekstra adım gerektirmez — kaydedilince o kişi otomatik olarak
-  // görüntülenen kişinin babası/annesi olarak bağlanır, ayrıca açılır listeden seçmene gerek kalmaz. /
-  // ═══ NEW ═══ Opened from a person's profile via "➕ Add Father" / "➕ Add Mother". Requires no
-  // extra step beyond adding the new person — on save, that person is automatically linked as the
-  // viewed person's father/mother, no need to pick them from the dropdown yourself.
+  // ═══ YENİ ═══ Bir kişinin profilinde "➕ Baba Ekle" / "➕ Anne Ekle" ile açılır. Önce "bu kişi
+  // zaten ağaçta var mı, yoksa yeni mi?" diye sorar — böylece dedeni/büyükanneni yanlışlıkla iki
+  // kez eklemek yerine, zaten eklediğin kişiyi seçip doğrudan bağlayabilirsin. /
+  // ═══ NEW ═══ Opened from a person's profile via "➕ Add Father" / "➕ Add Mother". First asks
+  // "is this person already in the tree, or new?" — so you can link an already-added grandparent
+  // instead of accidentally creating a duplicate.
   window.openAddParentForm = function(childId, role){
     pendingAutoLink = { childId: childId, role: role };
-    openAddPersonForm();
     var child = byId[childId];
+    var roleLabel = role === 'father' ? 'Baba' : 'Anne';
+    document.getElementById('parentChoiceTitle').textContent = (child ? child.name : '') + ' — ' + roleLabel + ' Ekle';
+    document.getElementById('parentChoiceLabel').textContent = (child ? child.name : 'Bu kişi') + '\u2019nin ' + roleLabel.toLowerCase() + 'sı ağaçta zaten var mı?';
+    // Döngü önlemek için: çocuğun kendisi ve tüm altsoyu listeden hariç tutulur /
+    // Prevent cycles: the child themself and all their descendants are excluded from the list
+    var exclude = {}; exclude[childId] = true;
+    (function collectDescendants(id){
+      getChildren(id).forEach(function(c){ if (!exclude[c.id]){ exclude[c.id] = true; collectDescendants(c.id); } });
+    })(childId);
+    var sel = document.getElementById('parentChoiceSelect');
+    sel.innerHTML = '<option value="">— Listeden seç —</option>';
+    persons.filter(function(p){ return !exclude[p.id]; }).forEach(function(p){
+      var opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = p.name;
+      sel.appendChild(opt);
+    });
+    showPanel('parentChoicePanel');
+  };
+  window.linkExistingAsParent = function(){
+    var selectedId = document.getElementById('parentChoiceSelect').value;
+    if (!selectedId){ showToast('⚠️ Lütfen listeden bir kişi seçin.'); return; }
+    if (!pendingAutoLink) return;
+    var child = byId[pendingAutoLink.childId];
+    if (!child) return;
+    if (pendingAutoLink.role === 'father') child.fatherId = selectedId; else child.motherId = selectedId;
+    var linkedName = byId[selectedId] ? byId[selectedId].name : '';
+    var focusId = pendingAutoLink.childId;
+    pendingAutoLink = null;
+    save();
+    closeSidePanel();
+    render();
+    showToast('✅ "'+linkedName+'" bağlandı.');
+    setTimeout(function(){ focusOnPerson(focusId); openProfile(focusId); }, 60);
+  };
+  window.proceedToNewParentForm = function(){
+    var link = pendingAutoLink; // openAddPersonForm resets pendingPhoto but not pendingAutoLink; preserve it across the panel switch
+    openAddPersonForm();
+    pendingAutoLink = link;
+    var child = link ? byId[link.childId] : null;
+    var role = link ? link.role : 'father';
     document.getElementById('editPanelTitle').textContent = (role === 'father' ? 'Baba Ekle' : 'Anne Ekle') + (child ? ' — ' + child.name : '');
     if (role === 'father') setGender('M'); else setGender('F');
   };
@@ -938,6 +1003,7 @@
     document.getElementById('f-mother').value = p.motherId || '';
     document.getElementById('f-spouse').value = p.spouseId || '';
     renderPhotoPreview(pendingPhoto);
+    updateRelationLabels();
     showPanel('editPanel');
   };
   function populateRelationSelects(excludeId){
@@ -966,6 +1032,19 @@
       ? '<img src="'+dataUrl+'">'
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:24px;height:24px;color:var(--ink-soft);"><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M12 3v13M12 3l-4 4M12 3l4 4"/></svg>';
   }
+  // ═══ YENİ ═══ "BABA/ANNE/EŞ" etiketleri artık girilen ada göre canlı güncelleniyor — hangi
+  // kişinin ilişkisini düzenlediğin her zaman net oluyor. /
+  // ═══ NEW ═══ The "FATHER/MOTHER/SPOUSE" labels now update live based on the entered name —
+  // it's always clear whose relationship you're editing.
+  function updateRelationLabels(){
+    var name = document.getElementById('f-name').value.trim();
+    var who = name || 'bu kişi';
+    document.getElementById('f-father-label').textContent = 'Baba (' + who + '\u2019nin babası)';
+    document.getElementById('f-mother-label').textContent = 'Anne (' + who + '\u2019nin annesi)';
+    document.getElementById('f-spouse-label').textContent = 'Eş (' + who + '\u2019nin eşi)';
+  }
+  document.getElementById('f-name').addEventListener('input', updateRelationLabels);
+
   document.getElementById('photoUploadField').addEventListener('click', function(){ document.getElementById('photoInput').click(); });
   document.getElementById('photoInput').addEventListener('change', function(e){
     var file = e.target.files && e.target.files[0];
