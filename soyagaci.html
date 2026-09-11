@@ -11,10 +11,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#23222B; --ink-soft:#4A4854; --paper:#F7F1E6; --paper-deep:#EFE6D4;
-    --wine:#7C2D3F; --wine-deep:#5C2130; --navy:#2C3E55; --forest:#3F6B52; --gold:#C9962C; --rose:#C97B84;
-    --line:rgba(35,34,43,0.14); --shadow:0 18px 40px rgba(35,34,43,0.16); --shadow-soft:0 8px 22px rgba(35,34,43,0.09);
-    --radius-lg:24px; --radius-md:16px; --radius-sm:10px;
+    --ink:#2B2420; --ink-soft:#5C4F42; --paper:#EFE6D2; --paper-deep:#E2D2AE;
+    --wine:#8C3B34; --wine-deep:#6B2C27; --navy:#33465C; --forest:#5C6B49; --gold:#B9862F; --rose:#A15750;
+    --card:#FBF6EA; --walnut:#6B4A34;
+    --line:rgba(43,36,32,0.20); --shadow:0 18px 38px rgba(43,36,32,0.18); --shadow-soft:0 8px 20px rgba(43,36,32,0.11);
+    --radius-lg:6px; --radius-md:5px; --radius-sm:4px;
     --ff-display:'Fraunces', serif; --ff-body:'Manrope', sans-serif;
   }
   *{ box-sizing:border-box; }
@@ -22,7 +23,9 @@
   body{
     margin:0; font-family:var(--ff-body); color:var(--ink);
     background:
-      radial-gradient(circle at 1px 1px, rgba(35,34,43,0.05) 1px, transparent 0) 0 0/22px 22px,
+      radial-gradient(circle at 1px 1px, rgba(43,36,32,0.055) 1px, transparent 0) 0 0/26px 26px,
+      radial-gradient(ellipse 900px 500px at 12% 8%, rgba(185,134,47,0.06), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 90% 85%, rgba(140,59,52,0.05), transparent 60%),
       var(--paper);
     -webkit-font-smoothing:antialiased; overflow:hidden;
   }
@@ -35,29 +38,29 @@
   .topbar{
     position:fixed; top:0; left:0; right:0; z-index:600;
     display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-    padding:12px 20px; background:rgba(247,241,230,0.94); backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--line); box-shadow:0 6px 20px rgba(35,34,43,0.06);
+    padding:14px 20px 12px; background:var(--paper);
+    border-bottom:2.5px solid var(--ink); box-shadow:0 1px 0 0 var(--paper-deep);
   }
   .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
   .brand svg{ width:32px; height:32px; }
   .brand-word{ font-family:var(--ff-display); font-weight:600; font-size:17px; white-space:nowrap; }
-  .brand-sub{ font-size:11px; color:var(--wine); font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+  .brand-sub{ font-size:11px; color:var(--wine); font-weight:700; letter-spacing:.1em; }
   .back-home{
     display:flex; align-items:center; gap:6px; text-decoration:none; color:var(--ink-soft); font-weight:700; font-size:13px;
-    padding:8px 12px; border-radius:999px; border:1.5px solid var(--line); flex-shrink:0;
+    padding:8px 12px; border-radius:var(--radius-sm); border:1.5px solid var(--line); flex-shrink:0;
   }
   .back-home:hover{ border-color:var(--ink); color:var(--ink); }
   .back-home svg{ width:15px; height:15px; }
 
   .search-wrap{ position:relative; flex:1; min-width:160px; max-width:320px; }
   .search-wrap input{
-    width:100%; padding:9px 14px 9px 36px; border-radius:999px; border:1.5px solid var(--line);
-    background:#fff; font-size:13.5px; font-family:var(--ff-body); color:var(--ink);
+    width:100%; padding:9px 14px 9px 36px; border-radius:var(--radius-sm); border:1.5px solid var(--line);
+    background:var(--card); font-size:13.5px; font-family:var(--ff-body); color:var(--ink);
   }
   .search-wrap input:focus{ outline:none; border-color:var(--wine); }
   .search-wrap svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--ink-soft); pointer-events:none; }
   .search-results{
-    position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; border-radius:var(--radius-sm);
+    position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--card); border-radius:var(--radius-sm);
     box-shadow:var(--shadow); border:1px solid var(--line); max-height:260px; overflow-y:auto; display:none; z-index:50;
   }
   .search-results.open{ display:block; }
@@ -69,11 +72,11 @@
 
   .toolbar-actions{ display:flex; align-items:center; gap:8px; margin-inline-start:auto; flex-wrap:wrap; }
   .tbtn{
-    display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:999px; border:1.5px solid var(--line);
-    background:#fff; color:var(--ink); font-weight:700; font-size:12.5px; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:var(--radius-sm); border:1.5px solid var(--ink);
+    background:var(--card); color:var(--ink); font-weight:700; font-size:12.5px; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
     white-space:nowrap;
   }
-  .tbtn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-soft); border-color:var(--ink); }
+  .tbtn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-soft); background:var(--paper-deep); }
   .tbtn svg{ width:15px; height:15px; }
   .tbtn.primary{ background:var(--wine); color:#fff; border-color:var(--wine); }
   .tbtn.primary:hover{ background:var(--wine-deep); border-color:var(--wine-deep); }
@@ -83,7 +86,7 @@
   /* ---------- ZOOM CONTROLS ---------- */
   .zoom-controls{
     position:fixed; bottom:22px; inset-inline-end:22px; z-index:400; display:flex; flex-direction:column; gap:8px;
-    background:#fff; border-radius:16px; padding:8px; box-shadow:var(--shadow); border:1px solid var(--line);
+    background:var(--card); border-radius:16px; padding:8px; box-shadow:var(--shadow); border:1px solid var(--line);
   }
   .zoom-btn{
     width:38px; height:38px; border-radius:10px; border:none; background:var(--paper); color:var(--ink);
@@ -95,14 +98,14 @@
   .zoom-pct{ text-align:center; font-size:10.5px; font-weight:800; color:var(--ink-soft); }
 
   .gen-legend{
-    position:fixed; bottom:22px; left:22px; z-index:400; background:#fff; border-radius:14px; padding:10px 14px;
+    position:fixed; bottom:22px; left:22px; z-index:400; background:var(--card); border-radius:14px; padding:10px 14px;
     box-shadow:var(--shadow-soft); border:1px solid var(--line); font-size:11.5px; color:var(--ink-soft); font-weight:700;
     display:flex; align-items:center; gap:8px;
   }
   .gen-legend svg{ width:14px; height:14px; color:var(--wine); }
 
   .side-legend{
-    position:fixed; top:78px; left:22px; z-index:400; background:#fff; border-radius:14px; padding:10px 14px;
+    position:fixed; top:78px; left:22px; z-index:400; background:var(--card); border-radius:14px; padding:10px 14px;
     box-shadow:var(--shadow-soft); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;
   }
   .side-legend-item{ display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--ink-soft); font-weight:700; }
@@ -124,38 +127,47 @@
 
   .gen-row-label{
     position:absolute; font-family:var(--ff-display); font-size:13px; font-weight:600; color:var(--wine);
-    background:rgba(247,241,230,0.9); padding:4px 12px; border-radius:999px; border:1px solid var(--line);
+    background:var(--card); padding:4px 12px; border-radius:0 var(--radius-sm) var(--radius-sm) 0; border:1px solid var(--line); border-inline-start:3px solid var(--wine);
     white-space:nowrap; pointer-events:none;
   }
 
   /* ---------- PERSON CARD ---------- */
   .person-card{
-    position:absolute; width:180px; border-radius:var(--radius-md); background:#fff; border:1px solid var(--line);
-    box-shadow:var(--shadow-soft); padding:14px 14px 12px; text-align:center; cursor:pointer;
+    position:absolute; width:180px; border-radius:var(--radius-md); background:var(--card); border:1.5px solid var(--line);
+    box-shadow:var(--shadow-soft); padding:18px 14px 12px; text-align:center; cursor:pointer;
     transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     user-select:none;
   }
+  /* ═══ İç çerçeve — sertifika/belge hissi için ince bir iç çizgi / Inner rule line for a
+     certificate/document feel */
+  .person-card::after{
+    content:''; position:absolute; inset:5px; border:1px solid var(--accent-tint, rgba(43,36,32,0.10)); border-radius:3px;
+    pointer-events:none;
+  }
   .person-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow); border-color:var(--accent, var(--wine)); z-index:5; }
   .person-card.highlight{ animation:cardPulse 1.4s ease 2; border-color:var(--wine); }
-  @keyframes cardPulse{ 0%,100%{ box-shadow:var(--shadow-soft); } 50%{ box-shadow:0 0 0 6px rgba(124,45,63,0.18), var(--shadow); } }
+  @keyframes cardPulse{ 0%,100%{ box-shadow:var(--shadow-soft); } 50%{ box-shadow:0 0 0 6px rgba(140,59,52,0.16), var(--shadow); } }
+  /* ═══ YENİ ═══ Üstteki renkli şerit yerine, köşede oturan küçük bir "mühür" rozeti — nesil/taraf
+     rengini taşır. / ═══ NEW ═══ Instead of a colored top bar, a small corner "wax seal" badge
+     carrying the generation/lineage-side color. */
   .person-card::before{
-    content:''; position:absolute; top:0; left:16px; right:16px; height:4px; border-radius:0 0 4px 4px;
-    background:var(--accent, var(--wine));
+    content:''; position:absolute; top:-8px; left:14px; width:16px; height:16px; border-radius:50%;
+    background:var(--accent, var(--wine)); border:2px solid var(--paper); box-shadow:0 1px 3px rgba(43,36,32,0.3);
   }
   .pc-avatar{
-    width:64px; height:64px; border-radius:50%; margin:6px auto 10px; overflow:hidden; position:relative;
-    background:var(--accent-tint, #EFE6D4); display:flex; align-items:center; justify-content:center;
-    border:3px solid #fff; box-shadow:0 0 0 2px var(--accent, var(--wine));
+    width:62px; height:62px; border-radius:50%; margin:6px auto 10px; overflow:hidden; position:relative;
+    background:var(--accent-tint, #E2D2AE); display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--card); box-shadow:0 0 0 1.5px var(--accent, var(--wine)), 0 0 0 4px var(--card), 0 0 0 5.5px var(--accent-tint, rgba(43,36,32,0.15));
   }
   .pc-avatar img{ width:100%; height:100%; object-fit:cover; }
-  .pc-avatar .pc-initial{ font-family:var(--ff-display); font-weight:600; font-size:22px; color:var(--accent, var(--wine)); }
-  .pc-name{ font-size:14px; font-weight:800; line-height:1.25; color:var(--ink); }
-  .pc-dates{ font-size:10.5px; color:var(--ink-soft); font-weight:700; margin-top:4px; }
-  .pc-deceased{ opacity:.62; filter:grayscale(0.3); }
-  .pc-deceased-tag{ font-size:9px; color:var(--ink-soft); }
+  .pc-avatar .pc-initial{ font-family:var(--ff-display); font-weight:600; font-size:21px; color:var(--accent, var(--wine)); }
+  .pc-name{ font-size:13.5px; font-weight:700; line-height:1.3; color:var(--ink); font-family:var(--ff-display); padding-bottom:4px; border-bottom:1px solid var(--line); margin-bottom:5px; }
+  .pc-dates{ font-size:10px; color:var(--ink-soft); font-weight:600; letter-spacing:.02em; }
+  .pc-deceased{ opacity:.65; filter:sepia(0.15) saturate(0.85); }
+  .pc-deceased-tag{ font-size:9px; color:var(--ink-soft); font-style:italic; }
 
   .spouse-heart{
-    position:absolute; width:22px; height:22px; border-radius:50%; background:#fff; border:1.5px solid var(--line);
+    position:absolute; width:20px; height:20px; border-radius:50%; background:var(--card); border:1.5px solid var(--line);
     display:flex; align-items:center; justify-content:center; color:var(--wine); box-shadow:var(--shadow-soft); z-index:4;
   }
   .spouse-heart svg{ width:11px; height:11px; }
@@ -176,7 +188,7 @@
     position:sticky; top:0; background:var(--paper); z-index:2;
   }
   .sp-header h2{ font-size:19px; }
-  .sp-close{ width:34px; height:34px; border-radius:50%; border:none; background:#fff; box-shadow:var(--shadow-soft); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .sp-close{ width:34px; height:34px; border-radius:50%; border:none; background:var(--card); box-shadow:var(--shadow-soft); cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .sp-close svg{ width:16px; height:16px; }
   .sp-body{ padding:22px; }
 
@@ -193,7 +205,7 @@
   .profile-field .val.empty{ color:var(--ink-soft); font-style:italic; }
   .profile-links{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
   .profile-link-chip{
-    display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:#fff;
+    display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:var(--radius-sm); background:var(--card);
     border:1px solid var(--line); font-size:12.5px; font-weight:700; cursor:pointer;
   }
   .profile-link-chip:hover{ border-color:var(--ink); }
@@ -210,13 +222,13 @@
   .profile-actions{ display:flex; gap:10px; margin-top:26px; }
   .profile-actions .btn2{ flex:1; padding:11px; border-radius:10px; border:none; font-weight:800; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
   .btn2-edit{ background:var(--navy); color:#fff; }
-  .btn2-delete{ background:#fff; color:var(--wine); border:1.5px solid var(--wine) !important; }
+  .btn2-delete{ background:var(--card); color:var(--wine); border:1.5px solid var(--wine) !important; }
 
   /* edit form */
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:11px; font-weight:800; color:var(--ink-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
   .field input[type=text], .field input[type=date], .field select, .field textarea{
-    width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid var(--line); background:#fff; font-size:14px;
+    width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid var(--line); background:var(--card); font-size:14px;
     font-family:var(--ff-body); color:var(--ink);
   }
   .field textarea{ resize:vertical; min-height:70px; }
@@ -227,7 +239,7 @@
   .pp-input-row{ display:flex; align-items:center; gap:6px; }
   .pp-input-row input[type=text]{ flex:1; }
   .pp-clear{
-    flex-shrink:0; width:36px; height:36px; border-radius:9px; border:1.5px solid var(--line); background:#fff;
+    flex-shrink:0; width:36px; height:36px; border-radius:9px; border:1.5px solid var(--line); background:var(--card);
     color:var(--ink-soft); font-size:15px; cursor:pointer; display:none; align-items:center; justify-content:center;
   }
   .pp-clear.show{ display:flex; }
@@ -237,7 +249,7 @@
   }
   .pp-selected-tag.show{ display:flex; }
   .pp-dropdown{
-    position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid var(--line);
+    position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--card); border:1.5px solid var(--line);
     border-radius:10px; box-shadow:var(--shadow); max-height:220px; overflow-y:auto; z-index:30; display:none;
   }
   .pp-dropdown.open{ display:block; }
@@ -247,21 +259,21 @@
   .pp-item .pp-avatar img{ width:100%; height:100%; object-fit:cover; }
   .pp-empty{ padding:12px; font-size:12.5px; color:var(--ink-soft); text-align:center; }
   .photo-upload-field{
-    display:flex; align-items:center; gap:14px; padding:12px; border:1.5px dashed var(--line); border-radius:12px; cursor:pointer; background:#fff;
+    display:flex; align-items:center; gap:14px; padding:12px; border:1.5px dashed var(--line); border-radius:12px; cursor:pointer; background:var(--card);
   }
   .photo-upload-field .pu-preview{ width:56px; height:56px; border-radius:50%; overflow:hidden; background:var(--paper); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
   .photo-upload-field .pu-preview img{ width:100%; height:100%; object-fit:cover; }
   .photo-upload-field span{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
   .gender-toggle{ display:flex; gap:8px; }
   .gender-toggle button{
-    flex:1; padding:9px; border-radius:9px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:13px; cursor:pointer;
+    flex:1; padding:9px; border-radius:9px; border:1.5px solid var(--line); background:var(--card); font-weight:700; font-size:13px; cursor:pointer;
   }
   .gender-toggle button.active{ background:var(--wine); color:#fff; border-color:var(--wine); }
   .save-row{ display:flex; gap:10px; margin-top:20px; }
   .save-row button{ flex:1; padding:13px; border-radius:10px; border:none; font-weight:800; font-size:14px; cursor:pointer; }
   .save-btn{ background:var(--wine); color:#fff; }
   .save-btn:hover{ background:var(--wine-deep); }
-  .cancel-btn{ background:#fff; border:1.5px solid var(--line) !important; }
+  .cancel-btn{ background:var(--card); border:1.5px solid var(--line) !important; }
 
   .empty-state{
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:320px;
@@ -272,7 +284,7 @@
 
   .toast{
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(120%); background:var(--ink); color:#fff;
-    padding:12px 22px; border-radius:999px; font-size:13.5px; font-weight:700; z-index:1000; box-shadow:var(--shadow);
+    padding:12px 22px; border-radius:var(--radius-sm); font-size:13.5px; font-weight:700; z-index:1000; box-shadow:var(--shadow);
     transition:transform .3s cubic-bezier(.16,1,.3,1); pointer-events:none;
   }
   .toast.show{ transform:translateX(-50%) translateY(0); }
@@ -352,9 +364,9 @@
 
 <!-- ═══ YENİ ═══ Baba tarafı / anne tarafı / doğrudan soy renk açıklaması. -->
 <div class="side-legend" id="sideLegend">
-  <span class="side-legend-item"><i style="background:#2C3E55"></i>Baba Tarafı</span>
-  <span class="side-legend-item"><i style="background:#C97B84"></i>Anne Tarafı</span>
-  <span class="side-legend-item"><i style="background:#C9962C"></i>Doğrudan Soy</span>
+  <span class="side-legend-item"><i style="background:#33465C"></i>Baba Tarafı</span>
+  <span class="side-legend-item"><i style="background:#A15750"></i>Anne Tarafı</span>
+  <span class="side-legend-item"><i style="background:#B9862F"></i>Doğrudan Soy</span>
 </div>
 
 <div class="overlay-scrim" id="overlayScrim" onclick="closeSidePanel()"></div>
@@ -505,7 +517,7 @@
   var STORAGE_KEY = 'baydogan_soyagaci_v1';
   var CARD_W = 180, CARD_H = 168, COUPLE_GAP = 16, H_GAP = 46, V_GAP = 130, ROW_TOP_PAD = 130, SIDE_PAD = 80;
   var PHOTO_MAX_DIM = 320; // px — uploaded photos are downsized before being stored
-  var COLORS = ['#2C3E55','#7C2D3F','#3F6B52','#C9962C','#C97B84','#5C2130','#4A6FA5','#8A6D3B'];
+  var COLORS = ['#33465C','#8C3B34','#5C6B49','#B9862F','#A15750','#6B2C27','#3E5A73','#6B4A34'];
 
   // ================= STATE =================
   var persons = [];        // {id,name,gender,birthDate,deathDate,photo,bio,fatherId,motherId,spouseId}
@@ -594,7 +606,7 @@
   // themself, their spouse, or their descendants). Feeds the tree's card colors and the profile's
   // lineage lists.
   var LINEAGE_REF_ID = 'abdullah';
-  var LINEAGE_COLORS = { paternal: '#2C3E55', maternal: '#C97B84', direct: '#C9962C', none: null };
+  var LINEAGE_COLORS = { paternal: '#33465C', maternal: '#A15750', direct: '#B9862F', none: null };
   var LINEAGE_LABELS = {
     paternal: { tr: 'Baba Tarafı', en: "Father's Side", ar: 'جهة الأب' },
     maternal: { tr: 'Anne Tarafı', en: "Mother's Side", ar: 'جهة الأم' },
@@ -852,7 +864,7 @@
         var lineEl = document.createElementNS('http://www.w3.org/2000/svg','line');
         lineEl.setAttribute('x1', x1); lineEl.setAttribute('y1', y);
         lineEl.setAttribute('x2', x2); lineEl.setAttribute('y2', y);
-        lineEl.setAttribute('stroke', '#C9962C'); lineEl.setAttribute('stroke-width','2.5');
+        lineEl.setAttribute('stroke', '#6B4A34'); lineEl.setAttribute('stroke-width','2.5');
         svg.appendChild(lineEl);
       }
     });
@@ -878,7 +890,7 @@
       // stub down from the couple/parent to the bus line
       var stub = document.createElementNS('http://www.w3.org/2000/svg','path');
       stub.setAttribute('d', 'M' + midX + ' ' + midY + ' L' + midX + ' ' + busY);
-      stub.setAttribute('stroke', '#C9962C'); stub.setAttribute('stroke-width','2'); stub.setAttribute('fill','none');
+      stub.setAttribute('stroke', '#6B4A34'); stub.setAttribute('stroke-width','2'); stub.setAttribute('fill','none');
       svg.appendChild(stub);
 
       children.forEach(function(child){
@@ -899,7 +911,7 @@
         var d = 'M' + midX + ' ' + busY +
                 ' C ' + midX + ' ' + c1y + ', ' + childCenterX + ' ' + c2y + ', ' + childCenterX + ' ' + childTopY;
         path.setAttribute('d', d);
-        path.setAttribute('stroke', '#C9962C'); path.setAttribute('stroke-width','2'); path.setAttribute('fill','none'); path.setAttribute('opacity','0.85');
+        path.setAttribute('stroke', '#6B4A34'); path.setAttribute('stroke-width','2'); path.setAttribute('fill','none'); path.setAttribute('opacity','0.85');
         svg.appendChild(path);
       });
     });
