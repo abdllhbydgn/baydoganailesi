@@ -11,11 +11,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#2B2420; --ink-soft:#5C4F42; --paper:#EFE6D2; --paper-deep:#E2D2AE;
-    --wine:#8C3B34; --wine-deep:#6B2C27; --navy:#33465C; --forest:#5C6B49; --gold:#B9862F; --rose:#A15750;
-    --card:#FBF6EA; --walnut:#6B4A34;
-    --line:rgba(43,36,32,0.20); --shadow:0 18px 38px rgba(43,36,32,0.18); --shadow-soft:0 8px 20px rgba(43,36,32,0.11);
-    --radius-lg:6px; --radius-md:5px; --radius-sm:4px;
+    --ink:#1F2430; --ink-soft:#6B7280; --paper:#F3F5F9; --paper-deep:#E7EBF2;
+    --wine:#2E5FE8; --wine-deep:#1E46C4; --navy:#2E5FE8; --forest:#1BA37A; --gold:#D9A441; --rose:#EF5DA8;
+    --card:#FFFFFF; --walnut:#B9C2D0;
+    --line:rgba(31,36,48,0.10); --shadow:0 20px 42px rgba(31,36,48,0.14); --shadow-soft:0 8px 20px rgba(31,36,48,0.08);
+    --radius-lg:20px; --radius-md:16px; --radius-sm:10px;
     --ff-display:'Fraunces', serif; --ff-body:'Manrope', sans-serif;
   }
   *{ box-sizing:border-box; }
@@ -23,9 +23,8 @@
   body{
     margin:0; font-family:var(--ff-body); color:var(--ink);
     background:
-      radial-gradient(circle at 1px 1px, rgba(43,36,32,0.055) 1px, transparent 0) 0 0/26px 26px,
-      radial-gradient(ellipse 900px 500px at 12% 8%, rgba(185,134,47,0.06), transparent 60%),
-      radial-gradient(ellipse 800px 600px at 90% 85%, rgba(140,59,52,0.05), transparent 60%),
+      radial-gradient(ellipse 900px 500px at 15% 0%, rgba(46,95,232,0.05), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 90% 100%, rgba(239,93,168,0.05), transparent 60%),
       var(--paper);
     -webkit-font-smoothing:antialiased; overflow:hidden;
   }
@@ -133,38 +132,53 @@
 
   /* ---------- PERSON CARD ---------- */
   .person-card{
-    position:absolute; width:180px; border-radius:var(--radius-md); background:var(--card); border:1.5px solid var(--line);
-    box-shadow:var(--shadow-soft); padding:18px 14px 12px; text-align:center; cursor:pointer;
-    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-    user-select:none;
+    position:absolute; width:180px; border-radius:var(--radius-md); background:var(--card); border:1px solid var(--line);
+    box-shadow:var(--shadow-soft); padding:16px 14px 13px; text-align:center; cursor:pointer;
+    transition:transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease, border-color .18s ease, opacity .3s ease;
+    user-select:none; opacity:1; transform:scale(1) translateY(0);
   }
-  /* ═══ İç çerçeve — sertifika/belge hissi için ince bir iç çizgi / Inner rule line for a
-     certificate/document feel */
-  .person-card::after{
-    content:''; position:absolute; inset:5px; border:1px solid var(--accent-tint, rgba(43,36,32,0.10)); border-radius:3px;
-    pointer-events:none;
-  }
-  .person-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow); border-color:var(--accent, var(--wine)); z-index:5; }
+  .person-card.card-enter{ opacity:0; transform:scale(.9) translateY(10px); }
+  .person-card:hover{ transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--accent, var(--wine)); z-index:5; }
   .person-card.highlight{ animation:cardPulse 1.4s ease 2; border-color:var(--wine); }
-  @keyframes cardPulse{ 0%,100%{ box-shadow:var(--shadow-soft); } 50%{ box-shadow:0 0 0 6px rgba(140,59,52,0.16), var(--shadow); } }
-  /* ═══ YENİ ═══ Üstteki renkli şerit yerine, köşede oturan küçük bir "mühür" rozeti — nesil/taraf
-     rengini taşır. / ═══ NEW ═══ Instead of a colored top bar, a small corner "wax seal" badge
-     carrying the generation/lineage-side color. */
+  @keyframes cardPulse{ 0%,100%{ box-shadow:var(--shadow-soft); } 50%{ box-shadow:0 0 0 7px rgba(46,95,232,0.16), var(--shadow); } }
+  /* ═══ YENİ ═══ İnce üst renk şeridi — nesil/taraf rengini taşır. /
+     ═══ NEW ═══ Slim top accent bar carrying the lineage-side color. */
   .person-card::before{
-    content:''; position:absolute; top:-8px; left:14px; width:16px; height:16px; border-radius:50%;
-    background:var(--accent, var(--wine)); border:2px solid var(--paper); box-shadow:0 1px 3px rgba(43,36,32,0.3);
+    content:''; position:absolute; top:0; left:0; right:0; height:4px; border-radius:var(--radius-md) var(--radius-md) 0 0;
+    background:var(--accent, var(--wine));
   }
+  .person-card.is-root{
+    width:190px; box-shadow:0 12px 32px rgba(217,164,65,0.28), var(--shadow); border:1.5px solid var(--gold);
+    z-index:6;
+  }
+  .person-card.is-root::before{ height:5px; }
   .pc-avatar{
-    width:62px; height:62px; border-radius:50%; margin:6px auto 10px; overflow:hidden; position:relative;
-    background:var(--accent-tint, #E2D2AE); display:flex; align-items:center; justify-content:center;
-    border:2px solid var(--card); box-shadow:0 0 0 1.5px var(--accent, var(--wine)), 0 0 0 4px var(--card), 0 0 0 5.5px var(--accent-tint, rgba(43,36,32,0.15));
+    width:60px; height:60px; border-radius:50%; margin:4px auto 10px; overflow:hidden; position:relative;
+    background:var(--accent-tint, #E7EBF2); display:flex; align-items:center; justify-content:center;
+    border:3px solid var(--card); box-shadow:0 0 0 2px var(--accent, var(--wine)), var(--shadow-soft);
   }
   .pc-avatar img{ width:100%; height:100%; object-fit:cover; }
   .pc-avatar .pc-initial{ font-family:var(--ff-display); font-weight:600; font-size:21px; color:var(--accent, var(--wine)); }
-  .pc-name{ font-size:13.5px; font-weight:700; line-height:1.3; color:var(--ink); font-family:var(--ff-display); padding-bottom:4px; border-bottom:1px solid var(--line); margin-bottom:5px; }
-  .pc-dates{ font-size:10px; color:var(--ink-soft); font-weight:600; letter-spacing:.02em; }
-  .pc-deceased{ opacity:.65; filter:sepia(0.15) saturate(0.85); }
+  .pc-name{ font-size:13.5px; font-weight:800; line-height:1.3; color:var(--ink); }
+  .pc-dates{ font-size:10.5px; color:var(--ink-soft); font-weight:600; letter-spacing:.01em; margin-top:3px; }
+  .pc-deceased{ opacity:.6; filter:grayscale(0.35); }
   .pc-deceased-tag{ font-size:9px; color:var(--ink-soft); font-style:italic; }
+
+  /* ═══ YENİ ═══ Kartın üstünde/altında beliren, ebeveyn/çocuk dallarını açıp kapatan yuvarlak
+     düğmeler — sadece ilgili veri varsa görünür. Tıklama kartın kendisini AÇMAZ (profil için ayrı). /
+     ═══ NEW ═══ Round toggle buttons above/below the card that expand or collapse the parent/child
+     branches — only shown when that data actually exists. Clicking does NOT open the profile
+     (that's a separate click on the card body). */
+  .pc-toggle{
+    position:absolute; left:50%; transform:translateX(-50%); width:26px; height:26px; border-radius:50%;
+    background:var(--card); border:1.5px solid var(--line); color:var(--ink-soft); display:flex; align-items:center;
+    justify-content:center; cursor:pointer; box-shadow:var(--shadow-soft); z-index:7; transition:background .18s ease, transform .18s ease, color .18s ease;
+  }
+  .pc-toggle:hover{ background:var(--accent, var(--wine)); color:#fff; transform:translateX(-50%) scale(1.12); }
+  .pc-toggle.pc-toggle-up{ top:-13px; }
+  .pc-toggle.pc-toggle-down{ bottom:-13px; }
+  .pc-toggle.open{ background:var(--accent, var(--wine)); color:#fff; }
+  .pc-toggle svg{ width:13px; height:13px; }
 
   .spouse-heart{
     position:absolute; width:20px; height:20px; border-radius:50%; background:var(--card); border:1.5px solid var(--line);
@@ -710,105 +724,146 @@
   }
 
   // ================= LAYOUT =================
-  var visited, positions, generations, maxGen;
+  var visited, positions, generations, maxGen, minGen;
+  var previouslyVisible = {}; // id -> true: bir önceki render'da görünürdü (giriş animasyonu için) / was visible in the previous render (for entrance animation)
+
+  // ═══ YENİ ═══ Merkezi çift (root) — varsayılan olarak 'abdullah'. Sayfa ilk açıldığında sadece bu
+  // çift ve (varsa) onların çocukları görünür; ebeveyn/çocuk dalları kartlardaki ok düğmeleriyle
+  // açılıp kapanır. /
+  // ═══ NEW ═══ The central (root) couple — defaults to 'abdullah'. On first load only this couple
+  // and (if any) their children are shown; parent/child branches expand and collapse via the arrow
+  // buttons on each card.
+  var ROOT_ID = 'abdullah';
+  var expandedUp = {};   // personId -> true: bu kişinin ebeveyn çifti üstte gösteriliyor / this person's parent-couple is shown above
+  var expandedDown = {}; // personId -> true: bu kişinin (ya da eşinin) çocukları altta gösteriliyor / this person's (or spouse's) children are shown below
+  var _rootDefaultsInitialized = false;
+  function ensureRootDefaults(){
+    if (_rootDefaultsInitialized) return;
+    _rootDefaultsInitialized = true;
+    if (byId[ROOT_ID]) expandedDown[ROOT_ID] = true;
+  }
+  function hasParents(p){ return !!(p && (p.fatherId || p.motherId)); }
+  function hasAnyChildren(p){ return !!(p && getChildren(p.id).length); }
 
   function computeLayout(){
     visited = {};
     positions = {};
     generations = {};
-    maxGen = 0;
+    maxGen = 0; minGen = 0;
+    var root = byId[ROOT_ID];
+    if (!root){
+      // referans kişi silinmişse, ilk kişiyi kök yap / if the reference person was deleted, fall back to the first person
+      root = persons[0];
+    }
+    if (!root) return { width: CARD_W };
+    var rootSpouse = getSpouse(root.id);
 
-    // roots = persons with no parents present in the dataset
-    var roots = persons.filter(function(p){
-      return (!p.fatherId || !byId[p.fatherId]) && (!p.motherId || !byId[p.motherId]);
-    });
-    // stable order: keep original array order
-    var rootUnits = [];
-    roots.forEach(function(p){
-      if (visited[p.id]) return;
-      var spouse = getSpouse(p.id);
-      // ═══ DÜZELTİLDİ ═══ Bir kişinin kendi ebeveyni yoksa bile, EŞİNİN ebeveyni varsa bu kişiyi
-      // bağımsız bir "kök" olarak işlemeyiz — eşin soy hattı zaten bu çifti (ve bu kişiyi) kendi
-      // geçişinde bulup doğru nesle yerleştirecek. Bu olmadan, örn. eşi ebeveynsiz biri, kendi
-      // eşinin (gerçek) babasını "koparıp" ayrı/bağlantısız gösteriyordu. /
-      // ═══ FIXED ═══ Even if a person has no parents of their own, if their SPOUSE has parents
-      // recorded, we do NOT treat this person as an independent root — the spouse's ancestor line
-      // will already reach this couple (and this person) during its own top-down traversal and
-      // place them at the correct generation. Without this, a parentless spouse would "steal" their
-      // partner away from the partner's real father/mother, showing that parent as disconnected.
-      if (spouse){
-        var spouseHasParents = (spouse.fatherId && byId[spouse.fatherId]) || (spouse.motherId && byId[spouse.motherId]);
-        if (spouseHasParents) return;
-      }
-      var layout = layoutUnit(p.id);
-      if (layout) rootUnits.push(layout);
-    });
+    // ---- aşağı doğru (çocuklar/torunlar) / downward (children/grandchildren) ----
+    visited[root.id] = true; if (rootSpouse) visited[rootSpouse.id] = true;
+    var downLayout = layoutDown(root.id, rootSpouse ? rootSpouse.id : null);
 
-    var totalWidth = 0;
-    rootUnits.forEach(function(u){
-      u.offsetX = totalWidth;
-      totalWidth += u.width + H_GAP * 2.2;
-    });
-    totalWidth -= H_GAP * 2.2;
+    // ---- yukarı doğru (kökün her iki tarafının ebeveynleri, ayrı ayrı) /
+    // upward (each side of the root's own ancestors, independently) ----
+    var upRoot = layoutUp(root.id);
+    var upSpouse = rootSpouse ? layoutUp(rootSpouse.id) : null;
 
-    rootUnits.forEach(function(u){ place(u, u.offsetX, 0); });
+    var rootUnitWidth = rootSpouse ? (CARD_W * 2 + COUPLE_GAP) : CARD_W;
+    var upTotalWidth = (upRoot ? upRoot.width : CARD_W) + (rootSpouse ? COUPLE_GAP + (upSpouse ? upSpouse.width : CARD_W) : 0);
+    var totalWidth = Math.max(downLayout.width, rootUnitWidth, upTotalWidth);
 
-    return { width: Math.max(totalWidth, CARD_W), rootCount: rootUnits.length };
+    var canvasCenter = totalWidth / 2;
+    // kök çifti ortala / center the root couple
+    var rootX = canvasCenter - rootUnitWidth / 2;
+    placeDown(downLayout, rootX, 0);
+
+    // yukarıyı, kökün GERÇEK kart konumuna göre yerleştir / place the upward branches relative to the root's ACTUAL card position
+    var rootPos = positions[root.id];
+    placeUp(root.id, rootPos.x + CARD_W / 2, -1);
+    if (rootSpouse){
+      var spousePos = positions[rootSpouse.id];
+      placeUp(rootSpouse.id, spousePos.x + CARD_W / 2, -1);
+    }
+
+    return { width: totalWidth };
   }
 
-  function layoutUnit(personId){
-    if (visited[personId]) return null;
-    var person = byId[personId];
-    if (!person) return null;
-    var spouse = getSpouse(personId);
-    visited[personId] = true;
-    if (spouse) visited[spouse.id] = true;
-
-    var children = getCoupleChildren(personId, spouse ? spouse.id : null);
-    var ids = spouse ? [personId, spouse.id] : [personId];
-    var unitWidth = spouse ? (CARD_W * 2 + COUPLE_GAP) : CARD_W;
-
-    var childLayouts = [];
-    var childrenWidth = 0;
+  // ---------------- AŞAĞI (çocuklar) / DOWNWARD (children) ----------------
+  function layoutDown(personId, spouseId){
+    var ids = spouseId ? [personId, spouseId] : [personId];
+    var unitWidth = spouseId ? (CARD_W * 2 + COUPLE_GAP) : CARD_W;
+    var expand = !!(expandedDown[personId] || (spouseId && expandedDown[spouseId]));
+    var children = expand ? getCoupleChildren(personId, spouseId) : [];
+    var childLayouts = [], childrenWidth = 0;
     children.forEach(function(child){
-      var cl = layoutUnit(child.id);
-      if (!cl) return;
+      if (visited[child.id]) return;
+      visited[child.id] = true;
+      var childSpouse = getSpouse(child.id);
+      if (childSpouse) visited[childSpouse.id] = true;
+      var cl = layoutDown(child.id, childSpouse ? childSpouse.id : null);
       cl.offsetX = childrenWidth;
       childrenWidth += cl.width + H_GAP;
       childLayouts.push(cl);
     });
     if (childrenWidth > 0) childrenWidth -= H_GAP;
-
-    return {
-      ids: ids,
-      width: Math.max(unitWidth, childrenWidth),
-      unitWidth: unitWidth,
-      childLayouts: childLayouts,
-      childrenWidth: childrenWidth
-    };
+    return { ids: ids, width: Math.max(unitWidth, childrenWidth), unitWidth: unitWidth, childLayouts: childLayouts, childrenWidth: childrenWidth };
   }
-
-  function place(layout, xStart, gen){
+  function placeDown(layout, xStart, gen){
     if (gen > maxGen) maxGen = gen;
     var unitX = xStart + (layout.width - layout.unitWidth) / 2;
     var cx = unitX;
     layout.ids.forEach(function(id){
-      // ═══ YENİ ═══ Bir kişide elle "Nesil" seçilmişse, otomatik hesaplanan satır yerine o
-      // kullanılır — kart doğru satırda görünür (bağlantı çizgisi hâlâ Baba/Anne alanına bağlıdır). /
-      // ═══ NEW ═══ If a person has a manually-set "Generation", it's used instead of the
-      // auto-computed row — the card appears on the right row (the connector line still depends
-      // on the Father/Mother field being set).
-      var person = byId[id];
-      var effectiveGen = (person && person.generation) ? (person.generation - 1) : gen;
-      if (effectiveGen > maxGen) maxGen = effectiveGen;
-      positions[id] = { x: cx, y: ROW_TOP_PAD + effectiveGen * (CARD_H + V_GAP) };
-      generations[id] = effectiveGen;
+      positions[id] = { x: cx, y: gen * (CARD_H + V_GAP) };
+      generations[id] = gen;
       cx += CARD_W + COUPLE_GAP;
     });
     var childrenX = xStart + (layout.width - layout.childrenWidth) / 2;
     layout.childLayouts.forEach(function(cl){
-      place(cl, childrenX + cl.offsetX, gen + 1);
+      placeDown(cl, childrenX + cl.offsetX, gen + 1);
     });
+  }
+
+  // ---------------- YUKARI (ebeveynler, kişi bazında) / UPWARD (parents, per-person) ----------------
+  function layoutUp(personId){
+    var person = byId[personId];
+    var expand = !!expandedUp[personId];
+    if (!person || !expand || !hasParents(person)){
+      return { width: CARD_W, expanded: false };
+    }
+    var father = person.fatherId ? byId[person.fatherId] : null;
+    var mother = person.motherId ? byId[person.motherId] : null;
+    var fatherUp = father ? layoutUp(father.id) : null;
+    var motherUp = mother ? layoutUp(mother.id) : null;
+    var fatherW = father ? fatherUp.width : 0;
+    var motherW = mother ? motherUp.width : 0;
+    var gap = (father && mother) ? COUPLE_GAP : 0;
+    var width = Math.max(CARD_W, fatherW + gap + motherW);
+    return { width: width, expanded: true, father: father, mother: mother, fatherUp: fatherUp, motherUp: motherUp, fatherW: fatherW, motherW: motherW };
+  }
+  function placeUp(personId, centerX, gen){
+    var up = layoutUp(personId);
+    if (!up.expanded) return;
+    if (gen < minGen) minGen = gen;
+    var totalW = up.fatherW + (up.father && up.mother ? COUPLE_GAP : 0) + up.motherW;
+    var startX = centerX - totalW / 2;
+    if (up.father){
+      if (visited[up.father.id]){ startX += up.fatherW + COUPLE_GAP; }
+      else {
+        visited[up.father.id] = true;
+        var fCenterX = startX + up.fatherW / 2;
+        positions[up.father.id] = { x: fCenterX - CARD_W / 2, y: gen * (CARD_H + V_GAP) };
+        generations[up.father.id] = gen;
+        placeUp(up.father.id, fCenterX, gen - 1);
+        startX += up.fatherW + COUPLE_GAP;
+      }
+    }
+    if (up.mother){
+      if (visited[up.mother.id]) return;
+      visited[up.mother.id] = true;
+      var mCenterX = startX + up.motherW / 2;
+      positions[up.mother.id] = { x: mCenterX - CARD_W / 2, y: gen * (CARD_H + V_GAP) };
+      generations[up.mother.id] = gen;
+      placeUp(up.mother.id, mCenterX, gen - 1);
+    }
   }
 
   // ================= RENDER =================
@@ -829,10 +884,18 @@
       return;
     }
     emptyState.style.display = 'none';
+    ensureRootDefaults();
 
     var layoutInfo = computeLayout();
+    // ═══ YENİ ═══ Kök nesli 0 kabul edilir; ebeveynler negatif, alt soy pozitif nesillere gider.
+    // Tüm Y konumlarını kaydırarak en üstteki (negatif) kart bile ekranda pozitif kalır. /
+    // ═══ NEW ═══ The root generation is 0; ancestors go negative, descendants go positive. All Y
+    // positions are shifted so even the topmost (negative) card stays within positive canvas space.
+    var shiftY = ROW_TOP_PAD - minGen * (CARD_H + V_GAP);
+    Object.keys(positions).forEach(function(id){ positions[id].y += shiftY; });
+
     var totalW = SIDE_PAD * 2 + layoutInfo.width;
-    var totalH = ROW_TOP_PAD + (maxGen + 1) * (CARD_H + V_GAP);
+    var totalH = ROW_TOP_PAD + (maxGen - minGen + 1) * (CARD_H + V_GAP);
     canvas.style.width = totalW + 'px';
     canvas.style.height = totalH + 'px';
     svg.setAttribute('width', totalW);
@@ -841,14 +904,19 @@
     // shift everything by SIDE_PAD so nothing sits at x=0
     var shiftX = SIDE_PAD;
 
-    // ---- generation row labels ----
-    var genNames = ['1. Nesil','2. Nesil','3. Nesil','4. Nesil','5. Nesil','6. Nesil','7. Nesil'];
-    for (var g=0; g<=maxGen; g++){
+    // ---- generation row labels (köke göre — 0=kök, negatif=üst nesil, pozitif=alt nesil) /
+    // (relative to root — 0=root, negative=ancestor generation, positive=descendant generation) ----
+    function genLabel(g){
+      if (g === 0) return 'Kök Nesli';
+      if (g < 0) return (-g) + '. Üst Nesil';
+      return g + '. Alt Nesil';
+    }
+    for (var g = minGen; g <= maxGen; g++){
       var lbl = document.createElement('div');
       lbl.className = 'gen-row-label';
       lbl.style.left = '4px';
-      lbl.style.top = (ROW_TOP_PAD + g*(CARD_H+V_GAP) + CARD_H/2 - 12) + 'px';
-      lbl.textContent = genNames[g] || ((g+1) + '. Nesil');
+      lbl.style.top = (shiftY + g*(CARD_H+V_GAP) + CARD_H/2 - 12) + 'px';
+      lbl.textContent = genLabel(g);
       canvas.appendChild(lbl);
     }
 
@@ -926,21 +994,39 @@
       // otherwise falls back to the per-person hash color.
       var side = lineageSide[p.id];
       var accent = (side && LINEAGE_COLORS[side]) ? LINEAGE_COLORS[side] : colorFor(p.id);
+      var isRoot = (p.id === ROOT_ID) || (byId[ROOT_ID] && p.id === byId[ROOT_ID].spouseId);
+      var isNew = !previouslyVisible[p.id];
       var card = document.createElement('div');
-      card.className = 'person-card' + (p.deathDate ? ' pc-deceased' : '');
+      card.className = 'person-card' + (p.deathDate ? ' pc-deceased' : '') + (isRoot ? ' is-root' : '') + (isNew ? ' card-enter' : '');
       card.style.left = (pos.x + shiftX) + 'px';
       card.style.top = pos.y + 'px';
       card.style.setProperty('--accent', accent);
       card.style.setProperty('--accent-tint', tint(accent));
       card.dataset.id = p.id;
+      var upOpen = !!expandedUp[p.id];
+      var downOpen = !!(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId]));
+      var showUpToggle = hasParents(p);
+      var showDownToggle = hasAnyChildren(p);
       card.innerHTML =
+        (showUpToggle ? '<div class="pc-toggle pc-toggle-up'+(upOpen?' open':'')+'" data-toggle="up" title="'+(upOpen?'Ebeveynleri Gizle':'Ebeveynleri Göster')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg></div>' : '') +
         '<div class="pc-avatar">' +
           (p.photo ? '<img src="'+p.photo+'" alt="">' : '<span class="pc-initial">'+initial(p.name)+'</span>') +
         '</div>' +
         '<div class="pc-name">'+escapeHtml(p.name)+'</div>' +
         '<div class="pc-dates">'+ (lifeSpan(p) || '&nbsp;') +'</div>' +
-        (p.deathDate ? '<div class="pc-deceased-tag">Aramızdan ayrıldı</div>' : '');
-      card.addEventListener('click', function(){ openProfile(p.id); });
+        (p.deathDate ? '<div class="pc-deceased-tag">Aramızdan ayrıldı</div>' : '') +
+        (showDownToggle ? '<div class="pc-toggle pc-toggle-down'+(downOpen?' open':'')+'" data-toggle="down" title="'+(downOpen?'Çocukları Gizle':'Çocukları Göster')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></div>' : '');
+      card.addEventListener('click', function(e){
+        var toggleEl = e.target.closest('.pc-toggle');
+        if (toggleEl){
+          e.stopPropagation();
+          if (toggleEl.dataset.toggle === 'up'){ expandedUp[p.id] = !expandedUp[p.id]; }
+          else { expandedDown[p.id] = !(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId])); if (p.spouseId) delete expandedDown[p.spouseId]; }
+          render();
+          return;
+        }
+        openProfile(p.id);
+      });
       canvas.appendChild(card);
     });
 
@@ -961,6 +1047,16 @@
       heart.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.7-10-9.3C.6 8.4 2.4 5 6 5c2 0 3.4 1.1 4 2.2C10.6 6.1 12 5 14 5c3.6 0 5.4 3.4 4 6.7C19.5 16.3 12 21 12 21z"/></svg>';
       canvas.appendChild(heart);
     });
+
+    // ═══ YENİ ═══ Yeni beliren kartları hafif bir "büyüyerek belirme" animasyonuyla göster /
+    // ═══ NEW ═══ Play a gentle scale-in entrance animation for newly revealed cards
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        canvas.querySelectorAll('.person-card.card-enter').forEach(function(el){ el.classList.remove('card-enter'); });
+      });
+    });
+    previouslyVisible = {};
+    Object.keys(positions).forEach(function(id){ previouslyVisible[id] = true; });
 
     updateTransform();
   }
@@ -1054,7 +1150,45 @@
     }
   }
 
+  // ═══ YENİ ═══ Bir kişi şu an gizliyse (dalı kapalıysa), köke kadar olan yolu bulup gereken
+  // "Ebeveynleri Göster" / "Çocukları Göster" durumlarını otomatik açar — böylece arama sonucunda
+  // henüz açılmamış biri seçildiğinde bile ona ulaşılabilir. /
+  // ═══ NEW ═══ If a person is currently hidden (their branch is collapsed), finds the path back to
+  // the root and automatically opens the required "Show Parents" / "Show Children" states — so
+  // selecting a not-yet-expanded person from search still works.
+  function revealPathTo(targetId){
+    var root = byId[ROOT_ID];
+    if (!root || !byId[targetId] || targetId === root.id) return false;
+    var rootSpouse = getSpouse(root.id);
+    if (rootSpouse && targetId === rootSpouse.id) return false;
+    var queue = [{ id: root.id, ups: [], downs: [] }];
+    var seen = { }; seen[root.id] = true;
+    if (rootSpouse){ seen[rootSpouse.id] = true; queue.push({ id: rootSpouse.id, ups: [], downs: [] }); }
+    var guard = 0;
+    while (queue.length && guard++ < 5000){
+      var cur = queue.shift();
+      if (cur.id === targetId){
+        cur.ups.forEach(function(id){ expandedUp[id] = true; });
+        cur.downs.forEach(function(id){ expandedDown[id] = true; });
+        return true;
+      }
+      var p = byId[cur.id];
+      if (!p) continue;
+      [p.fatherId, p.motherId].forEach(function(pid){
+        if (pid && byId[pid] && !seen[pid]){ seen[pid] = true; queue.push({ id: pid, ups: cur.ups.concat([cur.id]), downs: cur.downs }); }
+      });
+      var sp = getSpouse(cur.id);
+      if (sp && !seen[sp.id]){ seen[sp.id] = true; queue.push({ id: sp.id, ups: cur.ups, downs: cur.downs }); }
+      getChildren(cur.id).forEach(function(c){
+        if (!seen[c.id]){ seen[c.id] = true; queue.push({ id: c.id, ups: cur.ups, downs: cur.downs.concat([cur.id]) }); }
+      });
+    }
+    return false;
+  }
   function focusOnPerson(id){
+    if (!positions[id]){
+      if (revealPathTo(id)) render();
+    }
     var pos = positions[id];
     if (!pos) return;
     var vp = document.getElementById('viewport');
@@ -1584,6 +1718,11 @@
         if (!confirm('Mevcut soyağacının üzerine bu yedek yüklenecek. Devam edilsin mi?')) return;
         persons = data.persons;
         rebuildIndex();
+        // ═══ YENİ ═══ Yeni bir yedek yüklenince açık/kapalı dal durumu da sıfırlanır, kök kişi
+        // yeniden varsayılan (çocukları açık) halde başlar. /
+        // ═══ NEW ═══ Loading a new backup also resets the expand/collapse state, so the root person
+        // starts fresh with the default (children open) view.
+        expandedUp = {}; expandedDown = {}; _rootDefaultsInitialized = false;
         save();
         render();
         showToast('✅ Yedek başarıyla geri yüklendi.');
