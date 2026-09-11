@@ -199,9 +199,10 @@
     flex-direction:column; gap:10px; color:#fff; cursor:pointer; text-align:center;
     opacity:0; transition:opacity .3s ease; background:rgba(20,16,20,0.35);
   }
-  .family-card.empty .hero-upload{ opacity:1; }
+  .family-card.empty .hero-upload{ pointer-events:none; }
+  body.is-admin .family-card.empty .hero-upload{ opacity:1; pointer-events:auto; }
   .family-card:not(.empty) .hero-upload{ pointer-events:none; }
-  .family-card:not(.empty):hover .hero-upload{ opacity:1; pointer-events:auto; background:rgba(20,16,20,0.55); }
+  body.is-admin .family-card:not(.empty):hover .hero-upload{ opacity:1; pointer-events:auto; background:rgba(20,16,20,0.55); }
   .hero-upload svg{ width:34px; height:34px; opacity:.9; }
   .hero-upload span{ font-size:13.5px; font-weight:700; letter-spacing:.03em; max-width:220px; }
   .hero-upload input{ display:none; }
@@ -290,8 +291,9 @@
     width:96px; height:96px; border-radius:50%; margin-bottom:18px; position:relative;
     background:var(--accent-tint, #EFE6D4); display:flex; align-items:center; justify-content:center;
     overflow:hidden; border:3px solid #fff; box-shadow:0 0 0 2px var(--accent, var(--wine));
-    cursor:pointer;
+    cursor:pointer; pointer-events:none;
   }
+  body.is-admin .member-photo{ pointer-events:auto; }
   .member-photo img{ width:100%; height:100%; object-fit:cover; }
   .member-photo .seal{ width:80%; height:80%; background:transparent; }
   .member-photo .seal::after{ display:none; }
@@ -299,7 +301,7 @@
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(35,34,43,0.55);
     color:#fff; opacity:0; transition:opacity .25s ease; font-size:10.5px; font-weight:700; text-align:center; padding:6px;
   }
-  .member-photo:hover .photo-hint{ opacity:1; }
+  body.is-admin .member-photo:hover .photo-hint{ opacity:1; }
   .member-photo input{ display:none; }
   .member-role{
     display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
@@ -328,10 +330,14 @@
   .album-head .count{ font-size:13px; font-weight:700; color:var(--ink-soft); background:#fff; border:1px solid var(--line); padding:5px 12px; border-radius:999px; }
 
   .dropzone{
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    display:none; flex-direction:column; align-items:center; justify-content:center; gap:2px;
     border:1.5px dashed var(--line); border-radius:var(--radius-md); padding:22px; text-align:center;
     background:#fff; cursor:pointer; transition:border-color .25s ease, background .25s ease; margin-bottom:20px;
   }
+  /* ═══ YENİ ═══ Yükleme kutusu SADECE admin girişi yapılmışken görünür (güvenlik + netlik için) /
+     ═══ NEW ═══ The upload dropzone is ONLY shown when logged in as admin (for both security clarity
+     and UX — visitors never see an upload control they can't actually use). */
+  body.is-admin .dropzone{ display:flex; }
   .dropzone.drag{ border-color:var(--accent, var(--wine)); background:var(--accent-tint,#fff); }
   .dropzone svg{ width:26px; height:26px; color:var(--accent, var(--wine)); margin-bottom:6px; }
   .dropzone p{ margin:0; font-size:13.5px; font-weight:700; color:var(--ink); }
@@ -1159,6 +1165,11 @@
       isAdmin = !!user;
       adminToggle.classList.toggle('is-admin', isAdmin);
       adminToggleLabel.textContent = isAdmin ? 'Yönetici (Çıkış)' : 'Yönetici Girişi';
+      // ═══ YENİ ═══ Yükleme kutuları (dropzone) artık SADECE admin girişi yapılmışken görünür —
+      // giriş yapmamış ziyaretçiler yükleme arayüzünü hiç görmüyor. /
+      // ═══ NEW ═══ Upload dropzones are now ONLY visible when logged in as admin — visitors who
+      // aren't logged in never see the upload interface at all.
+      document.body.classList.toggle('is-admin', isAdmin);
       renderAllPhotos();
     });
   } else {
