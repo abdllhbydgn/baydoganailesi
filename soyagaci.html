@@ -101,6 +101,14 @@
   }
   .gen-legend svg{ width:14px; height:14px; color:var(--wine); }
 
+  .side-legend{
+    position:fixed; top:78px; left:22px; z-index:400; background:#fff; border-radius:14px; padding:10px 14px;
+    box-shadow:var(--shadow-soft); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;
+  }
+  .side-legend-item{ display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--ink-soft); font-weight:700; }
+  .side-legend-item i{ width:11px; height:11px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  @media (max-width:760px){ .side-legend{ top:auto; bottom:80px; left:22px; } }
+
   /* ---------- VIEWPORT / CANVAS ---------- */
   .viewport{
     position:absolute; inset:0; top:0; overflow:hidden; cursor:grab;
@@ -189,6 +197,16 @@
     border:1px solid var(--line); font-size:12.5px; font-weight:700; cursor:pointer;
   }
   .profile-link-chip:hover{ border-color:var(--ink); }
+  .profile-side-tag{
+    display:inline-block; margin-top:6px; padding:3px 10px; border-radius:999px; font-size:10.5px; font-weight:800;
+    text-transform:uppercase; letter-spacing:.04em; color:#fff; background:var(--accent);
+  }
+  .lineage-list{ display:flex; flex-direction:column; gap:4px; margin-top:6px; max-height:220px; overflow-y:auto; }
+  .lineage-item{
+    font-size:12.5px; font-weight:600; color:var(--ink); cursor:pointer; padding:5px 8px; border-radius:7px; transition:background .15s ease;
+  }
+  .lineage-item:hover{ background:var(--paper-deep); }
+  .lineage-item em{ color:var(--ink-soft); font-style:normal; font-weight:500; }
   .profile-actions{ display:flex; gap:10px; margin-top:26px; }
   .profile-actions .btn2{ flex:1; padding:11px; border-radius:10px; border:none; font-weight:800; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
   .btn2-edit{ background:var(--navy); color:#fff; }
@@ -330,6 +348,13 @@
 <div class="gen-legend">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M12 10 6 4M12 10l6-6M6 20v-4M18 20v-4"/></svg>
   Sürükleyerek gezin · Fare tekerleğiyle yakınlaştırın
+</div>
+
+<!-- ═══ YENİ ═══ Baba tarafı / anne tarafı / doğrudan soy renk açıklaması. -->
+<div class="side-legend" id="sideLegend">
+  <span class="side-legend-item"><i style="background:#2C3E55"></i>Baba Tarafı</span>
+  <span class="side-legend-item"><i style="background:#C97B84"></i>Anne Tarafı</span>
+  <span class="side-legend-item"><i style="background:#C9962C"></i>Doğrudan Soy</span>
 </div>
 
 <div class="overlay-scrim" id="overlayScrim" onclick="closeSidePanel()"></div>
@@ -487,7 +512,7 @@
   var byId = {};
   var pan = { x:0, y:0 }, zoom = 1;
   var editingId = null;    // person currently open in the edit form (null = adding new)
-  var pendingAutoLink = null; // { childId, role: 'father'|'mother' } — set by openAddParentForm, consumed by savePersonForm
+  var pendingAutoLink = null; // { mode:'parent'|'sibling'|'formerSpouse', refId, role } — set by openAdd*Form, consumed by link/save functions
   var pendingPhoto = '';   // base64 photo staged in the edit form
 
   // ================= SEED DATA (first run only) =================
@@ -551,8 +576,103 @@
     return hex + '22';
   }
   function getSpouse(id){ var p = byId[id]; return p && p.spouseId ? byId[p.spouseId] : null; }
+  function getFormerSpouses(id){
+    var p = byId[id];
+    if (!p || !Array.isArray(p.formerSpouseIds)) return [];
+    return p.formerSpouseIds.map(function(fid){ return byId[fid]; }).filter(Boolean);
+  }
   function getChildren(id){
     return persons.filter(function(p){ return p.fatherId === id || p.motherId === id; });
+  }
+
+  // ================= BABA TARAFI / ANNE TARAFI (LINEAGE SIDE) =================
+  // ═══ YENİ ═══ Site sahibi (referans kişi, varsayılan 'abdullah') temel alınarak her kişinin
+  // "Baba Tarafı", "Anne Tarafı" ya da "Doğrudan Soy" (referans kişinin kendisi, eşi, alt soyu)
+  // olduğu hesaplanır. Bu, ağaçtaki kart renklerini ve profildeki soy listelerini besler. /
+  // ═══ NEW ═══ Relative to a reference person (defaults to 'abdullah'), computes whether each
+  // person is on the "Father's Side", "Mother's Side", or "Direct Line" (the reference person
+  // themself, their spouse, or their descendants). Feeds the tree's card colors and the profile's
+  // lineage lists.
+  var LINEAGE_REF_ID = 'abdullah';
+  var LINEAGE_COLORS = { paternal: '#2C3E55', maternal: '#C97B84', direct: '#C9962C', none: null };
+  var LINEAGE_LABELS = {
+    paternal: { tr: 'Baba Tarafı', en: "Father's Side", ar: 'جهة الأب' },
+    maternal: { tr: 'Anne Tarafı', en: "Mother's Side", ar: 'جهة الأم' },
+    direct: { tr: 'Doğrudan Soy', en: 'Direct Line', ar: 'النسل المباشر' }
+  };
+  var lineageSide = {}; // id -> 'paternal' | 'maternal' | 'direct' | undefined
+
+  function computeLineageSides(){
+    lineageSide = {};
+    var ref = byId[LINEAGE_REF_ID];
+    if (!ref) return;
+    lineageSide[ref.id] = 'direct';
+    if (ref.spouseId) lineageSide[ref.spouseId] = 'direct';
+    // aşağı doğru tüm alt soy / all descendants downward
+    (function markDescendants(id){
+      getChildren(id).forEach(function(c){
+        if (lineageSide[c.id]) return;
+        lineageSide[c.id] = 'direct';
+        if (c.spouseId && !lineageSide[c.spouseId]) lineageSide[c.spouseId] = 'direct';
+        markDescendants(c.id);
+      });
+    })(ref.id);
+
+    // bir tarafın (baba/anne) TÜM genişletilmiş ailesini (atalar + kardeşler + onların soyu) işaretler,
+    // referans kişiye geri dönmeden / marks a side's ENTIRE extended family (ancestors + their
+    // siblings + those siblings' descendants), never crossing back through the reference person
+    function floodSide(startId, side){
+      if (!startId || lineageSide[startId]) return;
+      var queue = [startId];
+      var seen = {};
+      while (queue.length){
+        var id = queue.shift();
+        if (seen[id] || id === ref.id) continue;
+        seen[id] = true;
+        if (!lineageSide[id]) lineageSide[id] = side;
+        var p = byId[id];
+        if (!p) continue;
+        if (p.fatherId) queue.push(p.fatherId);
+        if (p.motherId) queue.push(p.motherId);
+        if (p.spouseId) queue.push(p.spouseId);
+        getChildren(id).forEach(function(c){ queue.push(c.id); });
+      }
+    }
+    floodSide(ref.fatherId, 'paternal');
+    floodSide(ref.motherId, 'maternal');
+  }
+
+  // ═══ Belirli bir kişinin BABA hattını (kendisinden yukarı) veya ANNE hattını sırayla listeler /
+  // Lists a given person's FATHER line (upward) or MOTHER line, in order
+  function getAncestorChain(personId, which){
+    var chain = [];
+    var cur = byId[personId];
+    var seen = {};
+    while (cur){
+      var nextId = which === 'father' ? cur.fatherId : cur.motherId;
+      if (!nextId || seen[nextId]) break;
+      seen[nextId] = true;
+      var next = byId[nextId];
+      if (!next) break;
+      chain.push(next);
+      cur = next;
+    }
+    return chain;
+  }
+  // ═══ Bir kişinin TÜM alt soyunu (çocuklar, torunlar...) nesil derinliğiyle birlikte döndürür /
+  // Returns a person's ENTIRE descendant tree (children, grandchildren...) with generation depth
+  function getDescendantTree(personId){
+    var out = [];
+    var seen = {};
+    (function walk(id, depth){
+      getChildren(id).forEach(function(c){
+        if (seen[c.id]) return;
+        seen[c.id] = true;
+        out.push({ person: c, depth: depth });
+        walk(c.id, depth + 1);
+      });
+    })(personId, 1);
+    return out;
   }
   function getCoupleChildren(id1, id2){
     var map = {}, out = [];
@@ -682,6 +802,7 @@
   // ================= RENDER =================
   function render(){
     rebuildIndex();
+    computeLineageSides();
     var canvas = document.getElementById('treeCanvas');
     var svg = document.getElementById('connectorsSvg');
     var emptyState = document.getElementById('emptyState');
@@ -787,9 +908,12 @@
     persons.forEach(function(p){
       var pos = positions[p.id];
       if (!pos) return;
-      var accent = colorFor(p.fatherId && p.motherId ? (p.fatherId+p.motherId) : p.id);
-      // Use a per-person color so siblings share a hue via their parents, else derive from own id
-      accent = colorFor(p.id);
+      // ═══ YENİ ═══ Baba/Anne tarafı hesaplanabiliyorsa o renk kullanılır (lacivert/gül/altın);
+      // aksi halde kişiye özgü sabit renge geri döner. /
+      // ═══ NEW ═══ Uses the paternal/maternal/direct lineage color when computable (navy/rose/gold);
+      // otherwise falls back to the per-person hash color.
+      var side = lineageSide[p.id];
+      var accent = (side && LINEAGE_COLORS[side]) ? LINEAGE_COLORS[side] : colorFor(p.id);
       var card = document.createElement('div');
       card.className = 'person-card' + (p.deathDate ? ' pc-deceased' : '');
       card.style.left = (pos.x + shiftX) + 'px';
@@ -938,18 +1062,25 @@
   function openProfile(id){
     var p = byId[id];
     if (!p) return;
-    var accent = colorFor(p.id);
+    var side = lineageSide[p.id];
+    var accent = (side && LINEAGE_COLORS[side]) ? LINEAGE_COLORS[side] : colorFor(p.id);
     var father = p.fatherId ? byId[p.fatherId] : null;
     var mother = p.motherId ? byId[p.motherId] : null;
     var spouse = p.spouseId ? byId[p.spouseId] : null;
+    var formerSpouses = getFormerSpouses(p.id);
     var children = getChildren(p.id);
+    var siblings = (p.fatherId || p.motherId) ? persons.filter(function(x){
+      return x.id !== p.id && ((p.fatherId && x.fatherId === p.fatherId) || (p.motherId && x.motherId === p.motherId));
+    }) : [];
 
     var html = '';
     html += '<div class="profile-avatar-row">';
     html += '<div class="profile-avatar" style="--accent:'+accent+'; --accent-tint:'+tint(accent)+'">' +
       (p.photo ? '<img src="'+p.photo+'">' : '<span class="pc-initial">'+initial(p.name)+'</span>') + '</div>';
     html += '<div><div class="profile-name">'+escapeHtml(p.name)+'</div>' +
-      '<div class="profile-role">'+(lifeSpan(p) || (p.gender==='M'?'Erkek':p.gender==='F'?'Kadın':'Aile Bireyi'))+'</div></div>';
+      '<div class="profile-role">'+(lifeSpan(p) || (p.gender==='M'?'Erkek':p.gender==='F'?'Kadın':'Aile Bireyi'))+'</div>' +
+      (side && LINEAGE_LABELS[side] ? '<div class="profile-side-tag" style="--accent:'+accent+'">'+LINEAGE_LABELS[side].tr+'</div>' : '') +
+      '</div>';
     html += '</div>';
 
     html += fieldBlock('Doğum Tarihi', fmtDate(p.birthDate));
@@ -963,9 +1094,35 @@
     if (mother) linkChips += chipHtml(mother, '👩 Anne: ');
     else linkChips += '<span class="profile-link-chip" style="border-style:dashed;" onclick="openAddParentForm(\''+p.id+'\', \'mother\')">➕ Anne Ekle</span>';
     if (spouse) linkChips += chipHtml(spouse, '💍 Eş: ');
+    formerSpouses.forEach(function(fs){ linkChips += chipHtml(fs, '💔 Eski Eş: '); });
+    linkChips += '<span class="profile-link-chip" style="border-style:dashed;" onclick="openAddFormerSpouseForm(\''+p.id+'\')">➕ Eski Eş Ekle</span>';
+    siblings.forEach(function(s){ linkChips += chipHtml(s, '🧑‍🤝‍🧑 Kardeş: '); });
+    linkChips += '<span class="profile-link-chip" style="border-style:dashed;" onclick="openAddSiblingForm(\''+p.id+'\')">➕ Kardeş Ekle</span>';
     children.forEach(function(c){ linkChips += chipHtml(c, '🧒 '); });
     html += '<div class="profile-field"><div class="lbl">Aile Bağlantıları</div>' +
       '<div class="profile-links">'+linkChips+'</div></div>';
+
+    // ═══ YENİ ═══ Baba tarafı soyu / Anne tarafı soyu / Tüm alt soy listeleri /
+    // ═══ NEW ═══ Father's-side lineage / Mother's-side lineage / Full descendant list
+    var fatherChain = getAncestorChain(p.id, 'father');
+    var motherChain = getAncestorChain(p.id, 'mother');
+    var descendants = getDescendantTree(p.id);
+
+    if (fatherChain.length){
+      html += '<div class="profile-field"><div class="lbl">🌳 Baba Tarafı Soyu</div><div class="lineage-list">' +
+        fatherChain.map(function(a, i){ return '<span class="lineage-item" onclick="openProfile(\''+a.id+'\')">' + '›'.repeat(i+1) + ' ' + escapeHtml(a.name) + (lifeSpan(a) ? ' <em>('+lifeSpan(a)+')</em>' : '') + '</span>'; }).join('') +
+        '</div></div>';
+    }
+    if (motherChain.length){
+      html += '<div class="profile-field"><div class="lbl">🌳 Anne Tarafı Soyu</div><div class="lineage-list">' +
+        motherChain.map(function(a, i){ return '<span class="lineage-item" onclick="openProfile(\''+a.id+'\')">' + '›'.repeat(i+1) + ' ' + escapeHtml(a.name) + (lifeSpan(a) ? ' <em>('+lifeSpan(a)+')</em>' : '') + '</span>'; }).join('') +
+        '</div></div>';
+    }
+    if (descendants.length){
+      html += '<div class="profile-field"><div class="lbl">👨‍👩‍👧‍👦 Tüm Alt Soyu ('+descendants.length+' kişi)</div><div class="lineage-list">' +
+        descendants.map(function(d){ return '<span class="lineage-item" style="padding-inline-start:'+(d.depth*14)+'px" onclick="openProfile(\''+d.person.id+'\')">' + '·'.repeat(d.depth) + ' ' + escapeHtml(d.person.name) + (lifeSpan(d.person) ? ' <em>('+lifeSpan(d.person)+')</em>' : '') + '</span>'; }).join('') +
+        '</div></div>';
+    }
 
     html += '<div class="profile-actions">' +
       '<button class="btn2 btn2-edit" onclick="openEditPersonForm(\''+p.id+'\')">✏️ Düzenle</button>' +
@@ -991,6 +1148,9 @@
       if (x.fatherId === id) x.fatherId = '';
       if (x.motherId === id) x.motherId = '';
       if (x.spouseId === id) x.spouseId = '';
+      if (Array.isArray(x.formerSpouseIds) && x.formerSpouseIds.indexOf(id) !== -1){
+        x.formerSpouseIds = x.formerSpouseIds.filter(function(fid){ return fid !== id; });
+      }
     });
     save();
     closeSidePanel();
@@ -1022,7 +1182,7 @@
   // "is this person already in the tree, or new?" — so you can link an already-added grandparent
   // instead of accidentally creating a duplicate.
   window.openAddParentForm = function(childId, role){
-    pendingAutoLink = { childId: childId, role: role };
+    pendingAutoLink = { mode: 'parent', refId: childId, role: role };
     var child = byId[childId];
     var roleLabel = role === 'father' ? 'Baba' : 'Anne';
     document.getElementById('parentChoiceTitle').textContent = (child ? child.name : '') + ' — ' + roleLabel + ' Ekle';
@@ -1036,15 +1196,69 @@
     ppSetup('parentChoice', exclude);
     showPanel('parentChoicePanel');
   };
+  // ═══ YENİ ═══ Bir kişinin profilinde "➕ Kardeş Ekle" ile açılır — seçilen (ya da yeni eklenen)
+  // kişiye, referans kişiyle AYNI baba/anne bağlantısı otomatik verilir. /
+  // ═══ NEW ═══ Opened from a person's profile via "➕ Add Sibling" — the selected (or newly added)
+  // person automatically gets the SAME father/mother links as the reference person.
+  window.openAddSiblingForm = function(refId){
+    var ref = byId[refId];
+    if (!ref) return;
+    if (!ref.fatherId && !ref.motherId){
+      showToast('⚠️ Önce bu kişinin babasını veya annesini ekleyin — kardeş bağlantısı ortak ebeveyne dayanır.');
+      return;
+    }
+    pendingAutoLink = { mode: 'sibling', refId: refId };
+    document.getElementById('parentChoiceTitle').textContent = (ref.name || '') + ' — Kardeş Ekle';
+    document.getElementById('parentChoiceLabel').textContent = (ref.name || 'Bu kişi') + '\u2019nin kardeşi ağaçta zaten var mı? İsim yazarak arayın.';
+    var exclude = {}; exclude[refId] = true;
+    if (ref.fatherId) exclude[ref.fatherId] = true;
+    if (ref.motherId) exclude[ref.motherId] = true;
+    (function collectDescendants(id){
+      getChildren(id).forEach(function(c){ if (!exclude[c.id]){ exclude[c.id] = true; collectDescendants(c.id); } });
+    })(refId);
+    ppSetup('parentChoice', exclude);
+    showPanel('parentChoicePanel');
+  };
+  // ═══ YENİ ═══ "➕ Eski Eş Ekle" — seçilen (ya da yeni eklenen) kişi, referans kişinin
+  // formerSpouseIds listesine eklenir (iki yönlü). Ana ağaç bağlantısını (spouseId) etkilemez. /
+  // ═══ NEW ═══ "➕ Add Former Spouse" — the selected (or newly added) person is added to the
+  // reference person's formerSpouseIds list (both directions). Does not touch the main spouseId link.
+  window.openAddFormerSpouseForm = function(refId){
+    var ref = byId[refId];
+    if (!ref) return;
+    pendingAutoLink = { mode: 'formerSpouse', refId: refId };
+    document.getElementById('parentChoiceTitle').textContent = (ref.name || '') + ' — Eski Eş Ekle';
+    document.getElementById('parentChoiceLabel').textContent = (ref.name || 'Bu kişi') + '\u2019nin eski eşi ağaçta zaten var mı? İsim yazarak arayın.';
+    var exclude = {}; exclude[refId] = true;
+    ppSetup('parentChoice', exclude);
+    showPanel('parentChoicePanel');
+  };
+  function addFormerSpouseLink(refId, otherId){
+    var ref = byId[refId], other = byId[otherId];
+    if (!ref || !other) return;
+    if (!Array.isArray(ref.formerSpouseIds)) ref.formerSpouseIds = [];
+    if (ref.formerSpouseIds.indexOf(otherId) === -1) ref.formerSpouseIds.push(otherId);
+    if (!Array.isArray(other.formerSpouseIds)) other.formerSpouseIds = [];
+    if (other.formerSpouseIds.indexOf(refId) === -1) other.formerSpouseIds.push(refId);
+  }
   window.linkExistingAsParent = function(){
     var selectedId = ppValues.parentChoice;
     if (!selectedId){ showToast('⚠️ Lütfen isim yazıp listeden bir kişi seçin.'); return; }
     if (!pendingAutoLink) return;
-    var child = byId[pendingAutoLink.childId];
-    if (!child) return;
-    if (pendingAutoLink.role === 'father') child.fatherId = selectedId; else child.motherId = selectedId;
+    var link = pendingAutoLink;
+    var focusId = link.refId;
     var linkedName = byId[selectedId] ? byId[selectedId].name : '';
-    var focusId = pendingAutoLink.childId;
+    if (link.mode === 'sibling'){
+      var sib = byId[selectedId], ref = byId[link.refId];
+      sib.fatherId = ref.fatherId || sib.fatherId;
+      sib.motherId = ref.motherId || sib.motherId;
+    } else if (link.mode === 'formerSpouse'){
+      addFormerSpouseLink(link.refId, selectedId);
+    } else {
+      var child = byId[link.refId];
+      if (!child) return;
+      if (link.role === 'father') child.fatherId = selectedId; else child.motherId = selectedId;
+    }
     pendingAutoLink = null;
     save();
     closeSidePanel();
@@ -1056,10 +1270,18 @@
     var link = pendingAutoLink; // openAddPersonForm resets pendingPhoto but not pendingAutoLink; preserve it across the panel switch
     openAddPersonForm();
     pendingAutoLink = link;
-    var child = link ? byId[link.childId] : null;
-    var role = link ? link.role : 'father';
-    document.getElementById('editPanelTitle').textContent = (role === 'father' ? 'Baba Ekle' : 'Anne Ekle') + (child ? ' — ' + child.name : '');
-    if (role === 'father') setGender('M'); else setGender('F');
+    var ref = link ? byId[link.refId] : null;
+    if (!link){ return; }
+    if (link.mode === 'sibling'){
+      document.getElementById('editPanelTitle').textContent = 'Kardeş Ekle' + (ref ? ' — ' + ref.name : '');
+    } else if (link.mode === 'formerSpouse'){
+      document.getElementById('editPanelTitle').textContent = 'Eski Eş Ekle' + (ref ? ' — ' + ref.name : '');
+      setGender(ref && ref.gender === 'M' ? 'F' : ref && ref.gender === 'F' ? 'M' : '');
+    } else {
+      var role = link.role || 'father';
+      document.getElementById('editPanelTitle').textContent = (role === 'father' ? 'Baba Ekle' : 'Anne Ekle') + (ref ? ' — ' + ref.name : '');
+      if (role === 'father') setGender('M'); else setGender('F');
+    }
   };
   window.openEditPersonForm = function(id){
     var p = byId[id];
@@ -1235,7 +1457,12 @@
     var record = {
       id: id, name: name, gender: gender, birthDate: birthDate, deathDate: deathDate,
       photo: pendingPhoto, bio: bio, fatherId: fatherId, motherId: motherId, spouseId: spouseId,
-      generation: generation
+      generation: generation,
+      // ═══ YENİ ═══ Bu form üzerinde düzenlenebilir bir alanı yok, bu yüzden düzenleme modunda
+      // eski değeri korunur (aksi halde düzenlemede silinirdi). /
+      // ═══ NEW ═══ This form has no editable field for it, so in edit mode the previous value is
+      // preserved (otherwise it would get wiped on every edit).
+      formerSpouseIds: (existingIdx >= 0 && Array.isArray(persons[existingIdx].formerSpouseIds)) ? persons[existingIdx].formerSpouseIds.slice() : []
     };
 
     // clear old spouse link if it changed
@@ -1255,15 +1482,22 @@
       byId[spouseId].spouseId = id;
     }
 
-    // ═══ YENİ ═══ "Baba/Anne Ekle" akışından geldiyse, yeni kaydedilen kişiyi otomatik olarak
-    // ilgili çocuğun babası/annesi olarak bağla. /
-    // ═══ NEW ═══ If this came from the "Add Father/Mother" flow, automatically link the
-    // newly-saved person as that child's father/mother.
+    // ═══ YENİ ═══ "Baba/Anne/Kardeş/Eski Eş Ekle" akışından geldiyse, yeni kaydedilen kişiyi
+    // otomatik olarak ilgili bağlantıyla ilişkilendir. /
+    // ═══ NEW ═══ If this came from the "Add Father/Mother/Sibling/Former Spouse" flow, automatically
+    // link the newly-saved person with the corresponding relationship.
     var focusId = id;
-    if (pendingAutoLink && pendingAutoLink.childId && byId[pendingAutoLink.childId]){
-      var child = byId[pendingAutoLink.childId];
-      if (pendingAutoLink.role === 'father') child.fatherId = id; else child.motherId = id;
-      focusId = pendingAutoLink.childId;
+    if (pendingAutoLink && pendingAutoLink.refId && byId[pendingAutoLink.refId]){
+      var ref = byId[pendingAutoLink.refId];
+      if (pendingAutoLink.mode === 'sibling'){
+        record.fatherId = ref.fatherId || record.fatherId;
+        record.motherId = ref.motherId || record.motherId;
+      } else if (pendingAutoLink.mode === 'formerSpouse'){
+        addFormerSpouseLink(pendingAutoLink.refId, id);
+      } else {
+        if (pendingAutoLink.role === 'father') ref.fatherId = id; else ref.motherId = id;
+      }
+      focusId = pendingAutoLink.refId;
     }
     pendingAutoLink = null;
 
