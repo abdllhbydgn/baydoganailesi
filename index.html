@@ -256,20 +256,35 @@
 
   /* ---------- FAMILY GRID ---------- */
   .family-grid{ background:var(--paper-deep); }
-  .cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:26px; }
+  /* ═══ YENİ ═══ Geniş ekranlarda 5 kart tek sırada; dar ekranlarda otomatik olarak sarar. /
+     ═══ NEW ═══ 5 cards in a single row on wide screens; wraps automatically on narrow ones. */
+  .cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:22px; }
+  @media (min-width:1180px){
+    .cards{ grid-template-columns:repeat(5, 1fr); gap:20px; }
+    .member-card{ padding:26px 18px; }
+    .member-card h3{ font-size:19px; }
+    .member-photo{ width:82px; height:82px; }
+  }
+  @media (max-width:700px){ .cards{ grid-template-columns:1fr; } }
   .member-card{
     background:#fff; border-radius:var(--radius-md); padding:30px 26px; border:1px solid var(--line);
     box-shadow:var(--shadow-soft); position:relative; overflow:hidden;
-    opacity:0; transform:translateY(26px); transition:transform .55s cubic-bezier(.16,1,.3,1), box-shadow .35s ease, opacity .55s ease;
+    opacity:0; transform:translateY(26px); transition:transform .18s ease-out, box-shadow .3s ease, opacity .55s ease;
   }
   .member-card.in-view{ opacity:1; transform:translateY(0); }
   .member-card::before{
     content:''; position:absolute; top:0; left:0; right:0; height:5px; background:var(--accent, var(--wine));
   }
-  .member-card:hover{ transform:translateY(-8px); box-shadow:var(--shadow); }
-  /* ═══ YENİ ═══ Kart üzerine gelindiğinde soldan sağa geçen ince bir "parıltı" efekti /
-     ═══ NEW ═══ A subtle left-to-right shine sweep on hover */
+  .member-card:hover{ box-shadow:var(--shadow); }
+  /* ═══ YENİ ═══ Fareyi takip eden yumuşak bir "spot ışığı" — 3D eğilme efektiyle birlikte kartı
+     daha canlı/dokunsal hissettirir. / ═══ NEW ═══ A soft cursor-following spotlight — combined
+     with the 3D tilt, makes the card feel more alive/tactile. */
   .member-card{ position:relative; }
+  .member-card .card-glow{
+    position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease; border-radius:inherit;
+    background:radial-gradient(220px circle at var(--glow-x,50%) var(--glow-y,50%), var(--accent-tint, rgba(124,45,63,0.12)), transparent 70%);
+  }
+  .member-card:hover .card-glow{ opacity:1; }
   .member-card::after{
     content:''; position:absolute; inset:0; pointer-events:none; opacity:0;
     background:linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.5) 50%, transparent 60%);
@@ -795,6 +810,7 @@
     card.style.setProperty('--accent-tint', m.tint);
     card.id = 'member-' + m.id;
     card.innerHTML =
+      '<div class="card-glow"></div>' +
       '<label class="member-photo" tabindex="0" id="memberPhoto-' + m.id + '">' +
         '<span class="seal">' + logoMarkHtml('#2C3E55') + '</span>' +
         '<span class="photo-hint">Fotoğraf ekle</span>' +
@@ -809,6 +825,30 @@
       '</a>';
     cardsWrap.appendChild(card);
   });
+
+  // ═══ YENİ ═══ Kartlar fareyi takip ederek hafifçe 3D eğiliyor — profesyonel, "canlı" bir his /
+  // ═══ NEW ═══ Cards subtly tilt in 3D following the cursor — a premium, "alive" feel
+  (function setupCardTilt(){
+    var TILT_MAX = 7; // derece / degrees
+    cardsWrap.addEventListener('mousemove', function(e){
+      var card = e.target.closest('.member-card');
+      if (!card) return;
+      var rect = card.getBoundingClientRect();
+      var px = (e.clientX - rect.left) / rect.width;  // 0..1
+      var py = (e.clientY - rect.top) / rect.height;   // 0..1
+      var rotateY = (px - 0.5) * TILT_MAX * 2;
+      var rotateX = (0.5 - py) * TILT_MAX * 2;
+      card.style.transform = 'perspective(900px) rotateX(' + rotateX.toFixed(2) + 'deg) rotateY(' + rotateY.toFixed(2) + 'deg) translateY(-8px) scale(1.015)';
+      card.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
+      card.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
+    });
+    cardsWrap.addEventListener('mouseleave', function(e){
+      var card = e.target.closest('.member-card');
+      if (card){ card.style.transform = ''; return; }
+      // eğer fare tüm konteynerden ayrıldıysa tüm kartları sıfırla / if the cursor left the whole container, reset every card
+      cardsWrap.querySelectorAll('.member-card').forEach(function(c){ c.style.transform = ''; });
+    }, true);
+  })();
 
   // ---------------- Render: album blocks (skeleton grids; filled in by renderAllPhotos) ----------------
   var albumsWrap = document.getElementById('albumBlocks');
