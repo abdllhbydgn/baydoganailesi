@@ -672,6 +672,19 @@
       while (queue.length){
         var id = queue.shift();
         if (seen[id] || id === ref.id) continue;
+        // ═══ DÜZELTİLDİ ═══ Bir taraftan (ör. baba) akış, EŞİ (ör. anne) üzerinden karşı tarafın
+        // TÜM soyunu yanlışlıkla kendi tarafına katıyordu — çünkü kişinin eşi de kuyruğa ekleniyor,
+        // o eş de referans kişinin DİĞER ebeveyniyse (anne), onun kendi atalarına doğru akış aynı
+        // (yanlış) tarafla devam ediyordu. Artık bir akış, başlangıç noktası olmadığı sürece
+        // referansın DİĞER ebeveynini asla ele geçiremiyor — o kendi akışında (floodSide çağrısında)
+        // doğru şekilde işaretlenir. /
+        // ═══ FIXED ═══ A flood starting from one side (e.g. father) was crossing through his SPOUSE
+        // (e.g. mother) and incorrectly claiming her ENTIRE ancestry too — because a person's spouse
+        // gets queued, and if that spouse happened to be the reference person's OTHER parent, the
+        // flood continued into her own ancestors with the same (wrong) side. Now a flood can never
+        // claim the reference's OTHER parent unless it's literally where that flood started — she
+        // gets correctly tagged by her OWN floodSide() call instead.
+        if (id !== startId && (id === ref.fatherId || id === ref.motherId)) continue;
         seen[id] = true;
         if (!lineageSide[id]) lineageSide[id] = side;
         var p = byId[id];

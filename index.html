@@ -41,6 +41,19 @@
       var(--paper);
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
+    position:relative;
+  }
+  /* ═══ YENİ ═══ Sitenin geneline ince bir "eski fotoğraf" dokusu — hafif tane (grain) + kenarlarda
+     koyulaşan vinyet. Çok belirgin değil, sayfayı okumayı zorlaştırmıyor, sadece nostaljik bir katman
+     ekliyor. / ═══ NEW ═══ A subtle "old photograph" texture across the whole site — light film grain
+     + a vignette that darkens toward the edges. Understated, doesn't hurt readability, just adds a
+     nostalgic layer. */
+  body::before{
+    content:''; position:fixed; inset:0; z-index:90; pointer-events:none;
+    background:
+      radial-gradient(ellipse at center, transparent 45%, rgba(35,28,20,0.10) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;
   }
   ::selection{ background:var(--gold); color:var(--ink); }
   a{ color:inherit; }
@@ -166,7 +179,18 @@
       radial-gradient(2px 2px at 82% 32%, rgba(255,255,255,.08) 0, transparent 60%),
       radial-gradient(2px 2px at 60% 78%, rgba(255,255,255,.09) 0, transparent 60%);
   }
-  .family-card img.uploaded{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  /* ═══ YENİ ═══ Büyük aile fotoğrafı, eski bir aile portresi gibi hafif vinyetli ve sıcak tonlu —
+     tam siyah-beyaz değil, ama "çerçevelenmiş, saklanmış bir anı" hissi versin istedik. /
+     ═══ NEW ═══ The big family photo gets a soft vignette and warm tone — like an old family
+     portrait; not fully black & white, but framed with a "cherished, kept memory" feeling. */
+  .family-card img.uploaded{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    filter:sepia(0.14) saturate(1.08) contrast(1.03);
+  }
+  .family-card::after{
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+    box-shadow:inset 0 0 90px rgba(20,14,10,0.45), inset 0 0 20px rgba(20,14,10,0.25);
+  }
   .family-card-scrim{
     position:absolute; inset:0; background:linear-gradient(0deg, rgba(15,12,15,0.85) 0%, rgba(15,12,15,0.35) 45%, rgba(15,12,15,0.05) 70%, transparent 100%);
   }
@@ -317,7 +341,12 @@
     cursor:pointer; pointer-events:none;
   }
   body.is-admin .member-photo{ pointer-events:auto; }
-  .member-photo img{ width:100%; height:100%; object-fit:cover; }
+  /* ═══ YENİ ═══ Kişi fotoğrafları varsayılan olarak eski bir fotoğraf gibi siyah-beyaz duruyor,
+     karta fare gelince renk yavaşça "hatırlanır" gibi beliriyor — nostaljik bir efekt. /
+     ═══ NEW ═══ Person photos sit in black & white by default, like an old photograph — hovering
+     the card slowly brings the color back, as if the memory is being recalled. Nostalgic effect. */
+  .member-photo img{ width:100%; height:100%; object-fit:cover; filter:grayscale(0.92) contrast(1.04) sepia(0.08); transition:filter .6s ease; }
+  .member-card:hover .member-photo img{ filter:grayscale(0) contrast(1) sepia(0); }
   .member-photo .seal{ width:80%; height:80%; background:transparent; }
   .member-photo .seal::after{ display:none; }
   .member-photo .photo-hint{
@@ -368,21 +397,34 @@
   .dropzone input{ display:none; }
 
   .photo-grid{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:22px 16px;
   }
+  /* ═══ YENİ ═══ Albüm fotoğrafları artık bir kutudan dökülmüş eski polaroidler gibi — kalın beyaz
+     çerçeve, hafif ve değişen açılarda eğiklik, sıcak/eskitilmiş bir renk tonu. Üzerine gelince
+     düzeliyor. / ═══ NEW ═══ Album photos now look like old polaroids spilled from a box — thick
+     white border, slight alternating tilt, a warm/aged color grade. Straightens on hover. */
   .photo-grid .frame{
-    aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; position:relative;
-    box-shadow:var(--shadow-soft); border:1px solid var(--line);
-    transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;
+    aspect-ratio:1; border-radius:2px; overflow:hidden; position:relative;
+    box-shadow:0 6px 16px rgba(35,28,20,0.18); border:9px solid #fff; background:#fff;
+    transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease; transform:rotate(var(--tilt, 0deg));
   }
-  .photo-grid .frame:hover{ transform:translateY(-5px) scale(1.015); box-shadow:var(--shadow); z-index:2; }
+  .photo-grid .frame:nth-child(5n+1){ --tilt:-2.4deg; }
+  .photo-grid .frame:nth-child(5n+2){ --tilt:1.6deg; }
+  .photo-grid .frame:nth-child(5n+3){ --tilt:-1.2deg; }
+  .photo-grid .frame:nth-child(5n+4){ --tilt:2.2deg; }
+  .photo-grid .frame:nth-child(5n+5){ --tilt:-1.8deg; }
+  .photo-grid .frame:hover{ transform:rotate(0deg) translateY(-6px) scale(1.04); box-shadow:0 16px 30px rgba(35,28,20,0.26); z-index:2; }
   .photo-grid .frame::before{
     content:''; position:absolute; inset:0; z-index:1; pointer-events:none; opacity:0; transition:opacity .3s ease;
     background:linear-gradient(0deg, rgba(20,16,20,0.28) 0%, transparent 45%);
   }
   .photo-grid .frame:hover::before{ opacity:1; }
-  .photo-grid .frame img{ width:100%; height:100%; object-fit:cover; transition:transform .5s cubic-bezier(.16,1,.3,1); cursor:pointer; }
-  .photo-grid .frame:hover img{ transform:scale(1.08); }
+  .photo-grid .frame img{
+    width:100%; height:100%; object-fit:cover; cursor:pointer;
+    filter:sepia(0.22) saturate(1.15) contrast(1.05) brightness(1.01);
+    transition:transform .5s cubic-bezier(.16,1,.3,1), filter .5s ease;
+  }
+  .photo-grid .frame:hover img{ transform:scale(1.08); filter:sepia(0.05) saturate(1.05) contrast(1.02); }
   .photo-grid .frame .zoom-hint{
     position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center;
     opacity:0; transition:opacity .25s ease; pointer-events:none;
@@ -398,8 +440,9 @@
   .photo-grid .frame .remove:hover{ transform:scale(1.12); background:var(--wine); }
   .photo-grid .placeholder-frame{
     display:flex; align-items:center; justify-content:center; background:var(--accent-tint,#F0EAE0);
-    color:var(--accent, var(--wine)); opacity:.55;
+    color:var(--accent, var(--wine)); opacity:.55; transform:none !important; border:1.5px dashed var(--line) !important; box-shadow:none !important;
   }
+  .photo-grid .placeholder-frame:hover{ transform:none !important; box-shadow:none !important; }
   .photo-grid .placeholder-frame svg{ width:22px; height:22px; }
 
   /* ---------- FOOTER ---------- */
