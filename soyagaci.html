@@ -154,11 +154,11 @@
   .person-card.is-root::before{ height:5px; }
   .pc-avatar{
     width:60px; height:60px; border-radius:50%; margin:4px auto 10px; overflow:hidden; position:relative;
-    background:var(--accent-tint, #E7EBF2); display:flex; align-items:center; justify-content:center;
-    border:3px solid var(--card); box-shadow:0 0 0 2px var(--accent, var(--wine)), var(--shadow-soft);
+    background:var(--gender-tint, var(--accent-tint, #E7EBF2)); display:flex; align-items:center; justify-content:center;
+    border:3px solid var(--card); box-shadow:0 0 0 2px var(--gender-color, var(--accent, var(--wine))), var(--shadow-soft);
   }
   .pc-avatar img{ width:100%; height:100%; object-fit:cover; }
-  .pc-avatar .pc-initial{ font-family:var(--ff-display); font-weight:600; font-size:21px; color:var(--accent, var(--wine)); }
+  .pc-avatar .pc-initial{ font-family:var(--ff-display); font-weight:600; font-size:21px; color:var(--gender-color, var(--accent, var(--wine))); }
   .pc-name{ font-size:13.5px; font-weight:800; line-height:1.3; color:var(--ink); }
   .pc-dates{ font-size:10.5px; color:var(--ink-soft); font-weight:600; letter-spacing:.01em; margin-top:3px; }
   .pc-deceased{ opacity:.6; filter:grayscale(0.35); }
@@ -208,9 +208,9 @@
 
   /* profile view */
   .profile-avatar-row{ display:flex; align-items:center; gap:16px; margin-bottom:18px; }
-  .profile-avatar{ width:88px; height:88px; border-radius:50%; overflow:hidden; background:var(--accent-tint,#EFE6D4); display:flex; align-items:center; justify-content:center; border:3px solid #fff; box-shadow:0 0 0 2px var(--accent, var(--wine)); flex-shrink:0; }
+  .profile-avatar{ width:88px; height:88px; border-radius:50%; overflow:hidden; background:var(--gender-tint, var(--accent-tint,#EFE6D4)); display:flex; align-items:center; justify-content:center; border:3px solid #fff; box-shadow:0 0 0 2px var(--gender-color, var(--accent, var(--wine))); flex-shrink:0; }
   .profile-avatar img{ width:100%; height:100%; object-fit:cover; }
-  .profile-avatar .pc-initial{ font-family:var(--ff-display); font-size:30px; font-weight:600; color:var(--accent, var(--wine)); }
+  .profile-avatar .pc-initial{ font-family:var(--ff-display); font-size:30px; font-weight:600; color:var(--gender-color, var(--accent, var(--wine))); }
   .profile-name{ font-size:22px; font-weight:700; }
   .profile-role{ font-size:12.5px; font-weight:800; color:var(--accent, var(--wine)); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; }
   .profile-field{ margin-bottom:16px; }
@@ -558,6 +558,13 @@
       if (raw){
         var data = JSON.parse(raw);
         persons = Array.isArray(data.persons) ? data.persons : [];
+        // ═══ YENİ ═══ Hangi dalların açık/kapalı olduğu da kaydediliyor — sayfa yenilenince
+        // "üst soyu göster" ile açtığın kartlar kapanmıyor. /
+        // ═══ NEW ═══ Which branches are expanded/collapsed is now also saved — reloading the page
+        // no longer closes the cards you opened with "show ancestors".
+        if (data.expandedUp && typeof data.expandedUp === 'object') expandedUp = data.expandedUp;
+        if (data.expandedDown && typeof data.expandedDown === 'object') expandedDown = data.expandedDown;
+        if (Object.keys(expandedUp).length || Object.keys(expandedDown).length) _rootDefaultsInitialized = true;
       } else {
         persons = seedData();
         save();
@@ -570,7 +577,7 @@
   }
   function save(){
     try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ persons: persons, savedAt: new Date().toISOString() }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ persons: persons, expandedUp: expandedUp, expandedDown: expandedDown, savedAt: new Date().toISOString() }));
     } catch(e){
       console.error('Soyağacı verisi kaydedilemedi:', e);
       showToast('⚠️ Kaydetme başarısız — tarayıcı depolama alanı dolu olabilir.');
@@ -776,12 +783,21 @@
     var rootX = canvasCenter - rootUnitWidth / 2;
     placeDown(downLayout, rootX, 0);
 
-    // yukarıyı, kökün GERÇEK kart konumuna göre yerleştir / place the upward branches relative to the root's ACTUAL card position
-    var rootPos = positions[root.id];
-    placeUp(root.id, rootPos.x + CARD_W / 2, -1);
+    // ═══ DÜZELTİLDİ ═══ Yukarı dallar artık kökün HAM kart konumuna göre değil, her iki tarafın
+    // GEREKTİRDİĞİ (çakışmasız) genişliğe göre, ortak merkeze göre yerleştiriliyor. Önceden, kişi
+    // çiftinin kartları birbirine yakın olduğu için (ör. baba tarafı + anne tarafı ebeveynleri),
+    // iki tarafın ebeveyn çiftleri üst üste biniyordu. /
+    // ═══ FIXED ═══ The upward branches are no longer anchored to the root member's RAW card
+    // position — they're anchored using each side's REQUIRED (non-overlapping) width, centered on
+    // the shared canvas center. Previously, because the couple's own cards sit close together, both
+    // sides' parent-couples could land on top of each other.
+    var upRootWidth = upRoot ? upRoot.width : CARD_W;
+    var upSpouseWidth = rootSpouse ? (upSpouse ? upSpouse.width : CARD_W) : 0;
+    var upCombinedWidth = upRootWidth + (rootSpouse ? COUPLE_GAP + upSpouseWidth : 0);
+    var upStartX = canvasCenter - upCombinedWidth / 2;
+    placeUp(root.id, upStartX + upRootWidth / 2, -1);
     if (rootSpouse){
-      var spousePos = positions[rootSpouse.id];
-      placeUp(rootSpouse.id, spousePos.x + CARD_W / 2, -1);
+      placeUp(rootSpouse.id, upStartX + upRootWidth + COUPLE_GAP + upSpouseWidth / 2, -1);
     }
 
     return { width: totalWidth };
@@ -1002,6 +1018,15 @@
       card.style.top = pos.y + 'px';
       card.style.setProperty('--accent', accent);
       card.style.setProperty('--accent-tint', tint(accent));
+      // ═══ YENİ ═══ Avatar halkası artık cinsiyete göre renkleniyor (erkek: mavi, kadın: pembe) —
+      // üstteki renkli şerit (baba/anne tarafı) ayrı kalıyor, ikisi birbirini bozmuyor. /
+      // ═══ NEW ═══ The avatar ring is now colored by gender (male: blue, female: pink) — the top
+      // accent bar (paternal/maternal side) stays separate, the two don't clash.
+      var genderColor = p.gender === 'M' ? '#2E6FE0' : p.gender === 'F' ? '#E85D9E' : null;
+      if (genderColor){
+        card.style.setProperty('--gender-color', genderColor);
+        card.style.setProperty('--gender-tint', tint(genderColor));
+      }
       card.dataset.id = p.id;
       var upOpen = !!expandedUp[p.id];
       var downOpen = !!(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId]));
@@ -1022,6 +1047,7 @@
           e.stopPropagation();
           if (toggleEl.dataset.toggle === 'up'){ expandedUp[p.id] = !expandedUp[p.id]; }
           else { expandedDown[p.id] = !(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId])); if (p.spouseId) delete expandedDown[p.spouseId]; }
+          save();
           render();
           return;
         }
@@ -1221,7 +1247,8 @@
 
     var html = '';
     html += '<div class="profile-avatar-row">';
-    html += '<div class="profile-avatar" style="--accent:'+accent+'; --accent-tint:'+tint(accent)+'">' +
+    var genderColorProfile = p.gender === 'M' ? '#2E6FE0' : p.gender === 'F' ? '#E85D9E' : accent;
+    html += '<div class="profile-avatar" style="--accent:'+accent+'; --accent-tint:'+tint(accent)+'; --gender-color:'+genderColorProfile+'; --gender-tint:'+tint(genderColorProfile)+'">' +
       (p.photo ? '<img src="'+p.photo+'">' : '<span class="pc-initial">'+initial(p.name)+'</span>') + '</div>';
     html += '<div><div class="profile-name">'+escapeHtml(p.name)+'</div>' +
       '<div class="profile-role">'+(lifeSpan(p) || (p.gender==='M'?'Erkek':p.gender==='F'?'Kadın':'Aile Bireyi'))+'</div>' +
