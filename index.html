@@ -230,6 +230,14 @@
     font-family:var(--ff-display); font-size:56px; font-weight:600; color:var(--wine);
     float:left; line-height:1; margin:2px 8px 0 0;
   }
+  /* ═══ YENİ ═══ Aile sözümüz — kısa, sıcak bir alıntı bloğu / ═══ NEW ═══ Our family motto — a short, warm pull-quote */
+  .family-motto{
+    margin:28px 0 0; padding:22px 26px 20px 30px; background:var(--paper-deep); border-radius:var(--radius-md);
+    border-inline-start:4px solid var(--gold); font-family:var(--ff-display); font-style:italic; font-size:17px;
+    line-height:1.65; color:var(--ink); position:relative;
+  }
+  .family-motto .quote-mark{ font-size:34px; color:var(--wine); font-style:normal; line-height:0; position:relative; top:10px; margin-inline-end:2px; }
+  .family-motto cite{ display:block; margin-top:10px; font-style:normal; font-size:12.5px; font-weight:700; color:var(--wine); letter-spacing:.02em; }
   .quick-chips{
     display:flex; flex-wrap:wrap; gap:12px; padding:26px; background:#fff; border:1px solid var(--line);
     border-radius:var(--radius-md); box-shadow:var(--shadow-soft);
@@ -600,6 +608,11 @@
     <div class="intro-text" data-reveal>
       <p>Bu sayfa; sabahları mutfaktan gelen çay kokusuyla, okuldan dönüşte anlatılan günlerle, hafta sonu birlikte çekilen fotoğraflarla büyüyen küçük bir arşiv olsun istedik. Baba Abdullah, anne Ebru, büyük oğlan Ozan, küçük oğlan Emirhan ve en küçüğümüz Ömür Lena — beşimizin hikayesi burada, zamanla dolacak sayfalarda saklı.</p>
       <p>Her aile bireyinin kendine ait bir köşesi, kendi rengi ve kendi albümü var. Fotoğrafları toplu şekilde yükleyip anılarımızı burada bir araya getirebiliriz.</p>
+      <blockquote class="family-motto">
+        <span class="quote-mark">&ldquo;</span>
+        Ağaç yaşken eğilir derler; biz köklerimizi sevgiyle besledik, dallarımız kendi yolunu bulsun istedik.
+        <cite>— Baydoğan ailesinin sözü</cite>
+      </blockquote>
     </div>
     <div class="quick-chips" data-reveal>
       <h3>Hızlı Geçiş</h3>
@@ -612,8 +625,8 @@
   <div class="container">
     <div class="section-head" data-reveal>
       <span class="eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Ailemiz</span>
-      <h2>Beş kişilik ekibimizle tanışın</h2>
-      <p>Her kart, ailemizin bir ferdine ait — fotoğrafını eklemek için daire simgesine tıklamanız yeterli.</p>
+      <h2>Beş can, bir yürek — bizi tanıyın</h2>
+      <p>Her kart, bu yuvanın bir köşesi. Fotoğrafını eklemek için daire simgesine dokunmanız yeterli.</p>
     </div>
     <div class="cards" id="familyCards"></div>
   </div>
@@ -624,7 +637,7 @@
     <div class="section-head" data-reveal>
       <span class="eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="15" height="15" rx="2"/><path d="M8 21h10a2 2 0 0 0 2-2V9"/></svg>Albümler</span>
       <h2>Anılarımız, kişi kişi</h2>
-      <p>Her bölüme istediğiniz kadar fotoğrafı sürükleyip bırakabilir ya da tıklayarak toplu şekilde seçebilirsiniz.</p>
+      <p>Her fotoğraf bir gün, bir gülüş, bir "hatırlıyor musun" hikayesi taşır. Her bölüme istediğiniz kadar fotoğrafı sürükleyip bırakabilir ya da tıklayarak toplu şekilde seçebilirsiniz.</p>
     </div>
     <div id="albumBlocks"></div>
   </div>
@@ -752,11 +765,11 @@
 
   // ================= Family data ====================
   var FAMILY = [
-    { id:'abdullah', name:'Abdullah Baydoğan', role:'Baba', color:'#2C3E55', tint:'#E7EAEE', bio:'Ailenin sakin ve güvenilir kalbi.' },
-    { id:'ebru',     name:'Ebru Baydoğan',     role:'Anne', color:'#7C2D3F', tint:'#F3E4E7', bio:'Evimizin sıcaklığı, gülüşlerin kaynağı.' },
-    { id:'ozan',     name:'Ozan Baydoğan',     role:'Büyük Oğlan', color:'#3F6B52', tint:'#E5EDE8', bio:'Ağabeylik görevini gururla taşıyan enerji küpü.' },
-    { id:'emirhan',  name:'Emirhan Baydoğan',  role:'Küçük Oğlan', color:'#C9962C', tint:'#F6ECD8', bio:'Meraklı gözlerle her şeyi keşfeden kaşif.' },
-    { id:'omurlena', name:'Ömür Lena Baydoğan',role:'En Küçük Kız', color:'#C97B84', tint:'#F6E7E9', bio:'Evin en küçüğü, en büyük neşe kaynağı.' }
+    { id:'abdullah', name:'Abdullah Baydoğan', role:'Baba', color:'#2C3E55', tint:'#E7EAEE', bio:'Bir yuvanın direği sabırla durur derler — bu evin direği, sükûnetiyle tanınır.' },
+    { id:'ebru',     name:'Ebru Baydoğan',     role:'Anne', color:'#7C2D3F', tint:'#F3E4E7', bio:'Kapıdan girer girmez "ev" dedirten o sıcaklık, hep ondan gelir.' },
+    { id:'ozan',     name:'Ozan Baydoğan',     role:'Büyük Oğlan', color:'#3F6B52', tint:'#E5EDE8', bio:'Ağabeylik bir görev değil bir duruştur derler; o bunu en iyi bilenimiz.' },
+    { id:'emirhan',  name:'Emirhan Baydoğan',  role:'Küçük Oğlan', color:'#C9962C', tint:'#F6ECD8', bio:'Sorduğu her "neden" ile evi biraz daha büyüten küçük kâşifimiz.' },
+    { id:'omurlena', name:'Ömür Lena Baydoğan',role:'En Küçük Kız', color:'#C97B84', tint:'#F6E7E9', bio:'Küçücük ama kocaman bir bereket — gülüşü bu evin en tatlı sesi.' }
   ];
 
   function initial(name){ return name.trim().charAt(0).toUpperCase(); }
