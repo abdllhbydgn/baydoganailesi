@@ -1130,7 +1130,17 @@
     zoom = Math.min(1, rect.width / (cw + 100));
     if (!isFinite(zoom) || zoom <= 0) zoom = 1;
     pan.x = (rect.width - cw * zoom) / 2;
-    pan.y = 40;
+    // ═══ DÜZELTİLDİ ═══ Artık her zaman tuvalin en üstünü değil, KÖK çiftini (siz ve eşinizi)
+    // dikeyde ortalıyor — ebeveynler yukarı açıldığında bile "Sıfırla" sizi bulur. /
+    // ═══ FIXED ═══ Now always vertically centers on the ROOT couple (you and your spouse) instead
+    // of always pinning to the top of the canvas — even with ancestors expanded above, "Reset"
+    // finds you.
+    var rootPos = byId[ROOT_ID] && positions[ROOT_ID];
+    if (rootPos){
+      pan.y = rect.height / 2 - (rootPos.y + CARD_H / 2) * zoom;
+    } else {
+      pan.y = 40;
+    }
     updateTransform();
   }
 
@@ -1328,6 +1338,8 @@
     if (!p) return;
     if (!confirm('"'+p.name+'" kişisini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return;
     persons = persons.filter(function(x){ return x.id !== id; });
+    delete expandedUp[id];
+    delete expandedDown[id];
     persons.forEach(function(x){
       if (x.fatherId === id) x.fatherId = '';
       if (x.motherId === id) x.motherId = '';
