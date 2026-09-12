@@ -511,6 +511,17 @@
       </div>
     </div>
     <div class="field">
+      <label>Eski Eşler (varsa)</label>
+      <div id="f-former-spouse-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;"></div>
+      <div class="pp-wrap" id="f-formerSpouse-picker" data-key="formerSpouse">
+        <div class="pp-input-row">
+          <input type="text" id="f-formerSpouse-search" placeholder="Eski eş eklemek için isim yazın...">
+          <button type="button" class="pp-clear" id="f-formerSpouse-clear" onclick="ppClear('formerSpouse')">&times;</button>
+        </div>
+        <div class="pp-dropdown" id="f-formerSpouse-dropdown"></div>
+      </div>
+    </div>
+    <div class="field">
       <label>Biyografi / Notlar</label>
       <textarea id="f-bio" placeholder="Kısa bir tanıtım, anı ya da not yazın..."></textarea>
     </div>
@@ -1344,6 +1355,9 @@
     document.getElementById('f-generation').value = '';
     setGender('');
     ppSetup('father', null); ppSetup('mother', null); ppSetup('spouse', null);
+    pendingFormerSpouseIds = [];
+    ppSetup('formerSpouse', null);
+    renderFormerSpouseChips();
     renderPhotoPreview('');
     updateRelationLabels();
     showPanel('editPanel');
@@ -1473,6 +1487,9 @@
     ppSetup('father', selfExclude, p.fatherId);
     ppSetup('mother', selfExclude, p.motherId);
     ppSetup('spouse', selfExclude, p.spouseId);
+    pendingFormerSpouseIds = Array.isArray(p.formerSpouseIds) ? p.formerSpouseIds.slice() : [];
+    ppSetup('formerSpouse', selfExclude);
+    renderFormerSpouseChips();
     renderPhotoPreview(pendingPhoto);
     updateRelationLabels();
     showPanel('editPanel');
@@ -1485,8 +1502,23 @@
   // ═══ NEW ═══ The Father/Mother/Spouse and "already in tree?" fields are no longer a long,
   // unwieldy dropdown — they're a live-filtering search box as you type. Much easier to find the
   // right person as the tree grows to dozens of people.
-  var ppValues = { father: '', mother: '', spouse: '', parentChoice: '' };
-  var ppExcludeSets = { father: null, mother: null, spouse: null, parentChoice: null };
+  var ppValues = { father: '', mother: '', spouse: '', parentChoice: '', formerSpouse: '' };
+  var ppExcludeSets = { father: null, mother: null, spouse: null, parentChoice: null, formerSpouse: null };
+  var pendingFormerSpouseIds = []; // ═══ YENİ ═══ Düzenleme formunda o an eklenmiş eski eşlerin çalışma listesi / working list of former spouses added within the edit form
+
+  function renderFormerSpouseChips(){
+    var box = document.getElementById('f-former-spouse-chips');
+    if (!box) return;
+    box.innerHTML = pendingFormerSpouseIds.map(function(id){
+      var person = byId[id];
+      var name = person ? person.name : '?';
+      return '<span class="profile-link-chip">💔 ' + escapeHtml(name) + ' <span style="cursor:pointer; font-weight:900; margin-inline-start:4px;" onclick="removeFormerSpouseFromForm(\'' + id + '\')">&times;</span></span>';
+    }).join('') || '<span style="font-size:12px; color:var(--ink-soft); font-style:italic;">Henüz eklenmedi</span>';
+  }
+  window.removeFormerSpouseFromForm = function(id){
+    pendingFormerSpouseIds = pendingFormerSpouseIds.filter(function(x){ return x !== id; });
+    renderFormerSpouseChips();
+  };
 
   function ppSetup(key, excludeSet, initialId){
     ppExcludeSets[key] = excludeSet || null;
@@ -1532,13 +1564,21 @@
     dropdown.classList.add('open');
   }
   function ppSelect(key, id){
+    if (key === 'formerSpouse'){
+      if (pendingFormerSpouseIds.indexOf(id) === -1) pendingFormerSpouseIds.push(id);
+      renderFormerSpouseChips();
+      var fsInput = document.getElementById('f-formerSpouse-search');
+      fsInput.value = '';
+      document.getElementById('f-formerSpouse-dropdown').classList.remove('open');
+      return;
+    }
     ppValues[key] = id;
     var input = document.getElementById(key === 'parentChoice' ? 'parentChoice-search' : 'f-' + key + '-search');
     input.value = byId[id] ? byId[id].name : '';
     document.getElementById((key === 'parentChoice' ? 'parentChoice' : 'f-' + key) + '-dropdown').classList.remove('open');
     ppUpdateClearBtn(key);
   }
-  ['father', 'mother', 'spouse', 'parentChoice'].forEach(function(key){
+  ['father', 'mother', 'spouse', 'parentChoice', 'formerSpouse'].forEach(function(key){
     var inputId = key === 'parentChoice' ? 'parentChoice-search' : 'f-' + key + '-search';
     var input = document.getElementById(inputId);
     if (!input) return;
@@ -1627,15 +1667,14 @@
 
     var id = editingId || uid();
     var existingIdx = persons.findIndex(function(p){ return p.id === id; });
+    var oldFormerSpouseIds = (existingIdx >= 0 && Array.isArray(persons[existingIdx].formerSpouseIds)) ? persons[existingIdx].formerSpouseIds.slice() : [];
     var record = {
       id: id, name: name, gender: gender, birthDate: birthDate, deathDate: deathDate,
       photo: pendingPhoto, bio: bio, fatherId: fatherId, motherId: motherId, spouseId: spouseId,
       generation: generation,
-      // ═══ YENİ ═══ Bu form üzerinde düzenlenebilir bir alanı yok, bu yüzden düzenleme modunda
-      // eski değeri korunur (aksi halde düzenlemede silinirdi). /
-      // ═══ NEW ═══ This form has no editable field for it, so in edit mode the previous value is
-      // preserved (otherwise it would get wiped on every edit).
-      formerSpouseIds: (existingIdx >= 0 && Array.isArray(persons[existingIdx].formerSpouseIds)) ? persons[existingIdx].formerSpouseIds.slice() : []
+      // ═══ YENİ ═══ Artık formdan (Eski Eşler kutusundan) doğrudan yönetiliyor. /
+      // ═══ NEW ═══ Now managed directly from the form (the Former Spouses box).
+      formerSpouseIds: pendingFormerSpouseIds.slice()
     };
 
     // clear old spouse link if it changed
@@ -1654,6 +1693,22 @@
     if (spouseId && byId[spouseId]){
       byId[spouseId].spouseId = id;
     }
+
+    // ═══ YENİ ═══ Eski eş bağlantılarını çift yönlü senkronize et — eklenen kişide de bu kişi
+    // "eski eş" olarak görünsün, listeden çıkarılan kişide artık görünmesin. /
+    // ═══ NEW ═══ Sync former-spouse links bidirectionally — a newly added person also gets this
+    // person listed as their former spouse, and a removed one no longer does.
+    oldFormerSpouseIds.forEach(function(oldFsId){
+      if (record.formerSpouseIds.indexOf(oldFsId) === -1 && byId[oldFsId] && Array.isArray(byId[oldFsId].formerSpouseIds)){
+        byId[oldFsId].formerSpouseIds = byId[oldFsId].formerSpouseIds.filter(function(x){ return x !== id; });
+      }
+    });
+    record.formerSpouseIds.forEach(function(fsId){
+      var fsPerson = byId[fsId];
+      if (!fsPerson) return;
+      if (!Array.isArray(fsPerson.formerSpouseIds)) fsPerson.formerSpouseIds = [];
+      if (fsPerson.formerSpouseIds.indexOf(id) === -1) fsPerson.formerSpouseIds.push(id);
+    });
 
     // ═══ YENİ ═══ "Baba/Anne/Kardeş/Eski Eş Ekle" akışından geldiyse, yeni kaydedilen kişiyi
     // otomatik olarak ilgili bağlantıyla ilişkilendir. /
