@@ -936,6 +936,16 @@
   });
 
   // ---------------- Render: footer member links + seals ----------------
+  // ═══ DÜZELTİLDİ (26.09.2026) ═══ KÖK NEDEN: alttaki 5 yuvarlak rozetin HEPSİ, kişiye özel bir
+  // görsel olmadan, aynı genel aile arması (defne çelengi) ile çiziliyordu — bu yüzden hangisinin
+  // hangi aile üyesine ait olduğu anlaşılmıyordu. Artık her rozet, o kişinin kendi rengiyle baş
+  // harfini gösteriyor (fotoğraf yüklenmişse, renderAllPhotos() içinde o fotoğrafla değiştiriliyor —
+  // bkz. aşağıda "footer seal avatars"). /
+  // ═══ FIXED (Sep 26, 2026) ═══ ROOT CAUSE: all 5 round badges were drawn with the SAME generic
+  // family crest (laurel wreath), with nothing person-specific — so it was impossible to tell which
+  // badge belonged to which family member. Each badge now shows that person's own initial in their
+  // own color (swapped for their uploaded photo, if any, inside renderAllPhotos() below — see
+  // "footer seal avatars").
   var footerLinks = document.getElementById('footerMemberLinks');
   var footerSeals = document.getElementById('footerSeals');
   FAMILY.forEach(function(m){
@@ -945,7 +955,9 @@
 
     var s = document.createElement('div');
     s.className = 'seal';
-    s.innerHTML = logoMarkHtml('#C9962C');
+    s.id = 'footerSeal-' + m.id;
+    s.style.background = m.color;
+    s.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-weight:800;font-size:14px;">' + initial(m.name) + '</span>';
     s.title = m.name;
     s.addEventListener('click', function(){
       var target = document.getElementById('member-' + m.id);
@@ -1020,6 +1032,16 @@
       } else {
         if (img) img.remove();
         if (!seal){ seal = document.createElement('span'); seal.className='seal'; photoEl.insertBefore(seal, photoEl.querySelector('.photo-hint')); seal.innerHTML = logoMarkHtml('#2C3E55'); }
+      }
+      // ═══ YENİ ═══ Footer'daki küçük rozet de aynı avatar fotoğrafıyla senkronize — fotoğraf
+      // varsa onu, yoksa kişinin renkli baş harfini gösterir. /
+      // ═══ NEW ═══ The small footer seal stays in sync with the same avatar photo — shows the
+      // photo if one exists, otherwise the person's colored initial.
+      var footerSealEl = document.getElementById('footerSeal-' + m.id);
+      if (footerSealEl){
+        footerSealEl.innerHTML = avatar
+          ? '<img src="' + avatar.url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+          : '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-weight:800;font-size:14px;">' + initial(m.name) + '</span>';
       }
     });
 

@@ -1393,6 +1393,18 @@
     canvas.style.transform = 'translate(' + pan.x + 'px,' + pan.y + 'px) scale(' + zoom + ')';
     document.getElementById('zoomPct').textContent = Math.round(zoom * 100) + '%';
   }
+  // ═══ DÜZELTİLDİ (26.09.2026) ═══ KÖK NEDEN: bu iki fonksiyon (+/-/Sıfırla butonları) sayfanın
+  // ana IIFE kapsamı İÇİNDE tanımlıydı ama "window." ile dışarı açılmamıştı. HTML'deki
+  // onclick="zoomBy(...)" / onclick="resetView()" öznitelikleri ise GENEL (global) kapsamda
+  // çalışır — bu yüzden butona her tıklandığında sessizce "zoomBy is not defined" hatası
+  // fırlatılıyor, hiçbir şey olmuyordu. Diğer tüm butonlar (Kişi Ekle, Düzenle, vb.) zaten
+  // window.xxx = ... şeklinde tanımlıydı, sadece bu ikisi unutulmuştu. /
+  // ═══ FIXED (Sep 26, 2026) ═══ ROOT CAUSE: these two functions (the +/-/Reset zoom buttons) were
+  // defined INSIDE the page's main IIFE scope but never exposed via "window.". The HTML's
+  // onclick="zoomBy(...)" / onclick="resetView()" attributes run in the GLOBAL scope — so every
+  // click silently threw "zoomBy is not defined" and nothing happened. Every other button (Add
+  // Person, Edit, etc.) was already properly exposed as window.xxx = ...; only these two were
+  // missed.
   function zoomBy(delta, cx, cy){
     var vp = document.getElementById('viewport');
     var rect = vp.getBoundingClientRect();
@@ -1405,6 +1417,7 @@
     pan.y = py - (py - pan.y) * scaleRatio;
     updateTransform();
   }
+  window.zoomBy = zoomBy;
   function resetView(){
     var vp = document.getElementById('viewport');
     var canvas = document.getElementById('treeCanvas');
@@ -1426,6 +1439,7 @@
     }
     updateTransform();
   }
+  window.resetView = resetView;
 
   function setupPanZoom(){
     var vp = document.getElementById('viewport');
