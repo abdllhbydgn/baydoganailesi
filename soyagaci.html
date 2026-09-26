@@ -1138,6 +1138,9 @@
         getChildren(id).forEach(function(c){ queue.push(c.id); });
       }
     }
+    // Kökün kardeşleri doğrudan soy (baba/anne tarafı taramasından ÖNCE) /
+    // The root's siblings are direct line (BEFORE the father/mother side flood)
+    siblingsOf(ref.id).forEach(function(s){ if (!lineageSide[s.id]) lineageSide[s.id] = 'direct'; });
     floodSide(ref.fatherId, 'paternal');
     floodSide(ref.motherId, 'maternal');
     // ═══ YENİ ═══ Eski eş(ler) doğrudan soy rengini alır; eşin anne-babası ve ataları "Eşinin
@@ -1147,11 +1150,18 @@
     getFormerSpouses(ref.id).forEach(function(fs){ if (!lineageSide[fs.id]) lineageSide[fs.id] = 'direct'; });
     var sp = ref.spouseId ? byId[ref.spouseId] : null;
     if (sp){
+      // Eşin kardeşleri ve atalarının kardeşleri de "Eşinin Ailesi" / Spouse's siblings and her
+      // ancestors' siblings are "Spouse's Family" too
+      siblingsOf(sp.id).forEach(function(s){ if (!lineageSide[s.id]) lineageSide[s.id] = 'inlaw'; });
       (function markUp(id){
         var q = byId[id];
         if (!q) return;
         [q.fatherId, q.motherId].forEach(function(pid){
-          if (pid && byId[pid] && !lineageSide[pid]){ lineageSide[pid] = 'inlaw'; markUp(pid); }
+          if (pid && byId[pid] && !lineageSide[pid]){
+            lineageSide[pid] = 'inlaw';
+            siblingsOf(pid).forEach(function(s){ if (!lineageSide[s.id]) lineageSide[s.id] = 'inlaw'; });
+            markUp(pid);
+          }
         });
       })(sp.id);
     }
@@ -1322,6 +1332,21 @@
         generations[fs.id] = 0;
         visited[fs.id] = true;
       });
+      // ═══ YENİ ═══ Kökün ve eşinin kardeşleri: kökünküler en sola, eşininkiler en sağa. /
+      // ═══ NEW ═══ Siblings of the root and of the spouse: root's far left, spouse's far right.
+      var row0 = Object.keys(positions).filter(function(id){ return generations[id] === 0 || positions[id].y === rootPos.y; });
+      var leftX = Math.min.apply(null, row0.map(function(id){ return positions[id].x; }));
+      var rightX = Math.max.apply(null, row0.map(function(id){ return positions[id].x; }));
+      shownSiblings(root.id).filter(function(s){ return !visited[s.id]; }).reverse().forEach(function(s, i){
+        positions[s.id] = { x: leftX - (i + 1) * (CARD_W + H_GAP) - (getFormerSpouses(root.id).length ? H_GAP : 0), y: rootPos.y };
+        generations[s.id] = 0; visited[s.id] = true;
+      });
+      if (rootSpouse){
+        shownSiblings(rootSpouse.id).filter(function(s){ return !visited[s.id]; }).forEach(function(s, i){
+          positions[s.id] = { x: rightX + (i + 1) * (CARD_W + H_GAP), y: rootPos.y };
+          generations[s.id] = 0; visited[s.id] = true;
+        });
+      }
     }
 
     // ═══ YENİ ═══ Sola taşan kartlar olursa her şey sağa kaydırılır. /
@@ -1384,47 +1409,61 @@
   }
 
   // ---------------- YUKARI (ebeveynler, kişi bazında) / UPWARD (parents, per-person) ----------------
-  function layoutUp(personId){
-    var person = byId[personId];
-    var expand = !!expandedUp[personId];
-    if (!person || !expand || !hasParents(person)){
-      return { width: CARD_W, expanded: false };
-    }
-    var father = person.fatherId ? byId[person.fatherId] : null;
-    var mother = person.motherId ? byId[person.motherId] : null;
-    var fatherUp = father ? layoutUp(father.id) : null;
-    var motherUp = mother ? layoutUp(mother.id) : null;
-    var fatherW = father ? fatherUp.width : 0;
-    var motherW = mother ? motherUp.width : 0;
-    var gap = (father && mother) ? COUPLE_GAP : 0;
-    var width = Math.max(CARD_W, fatherW + gap + motherW);
-    return { width: width, expanded: true, father: father, mother: mother, fatherUp: fatherUp, motherUp: motherUp, fatherW: fatherW, motherW: motherW };
+  // ═══ YENİ (KARDEŞLER) ═══ Bir kişinin anne-babası açıldığında, o anne-babanın DİĞER çocukları
+  // (kişinin kardeşleri) da aynı sırada gösterilir: baba tarafında kişinin soluna, anne tarafında
+  // sağına. Önceden kardeş kaydediliyor ama ağaçta hiç çizilmiyordu. /
+  // ═══ NEW (SIBLINGS) ═══ When a person's parents are opened, the parents' OTHER children (the
+  // person's siblings) are shown on the same row: to the left on the father's side, to the right on
+  // the mother's side. Siblings used to be saved but were never drawn in the tree.
+  function siblingsOf(id){
+    var p = byId[id];
+    if (!p || !hasParents(p)) return [];
+    return persons.filter(function(x){
+      return x.id !== id && ((p.fatherId && x.fatherId === p.fatherId) || (p.motherId && x.motherId === p.motherId));
+    }).sort(function(a, b){ return String(a.birthDate || '9999').localeCompare(String(b.birthDate || '9999')); });
   }
+  function shownSiblings(id){ return expandedUp[id] ? siblingsOf(id) : []; }
+  function groupW(n){ return CARD_W + n * (CARD_W + H_GAP); }
+  function parentsW(id, seen){
+    var p = byId[id];
+    if (!p || !expandedUp[id] || !hasParents(p)) return 0;
+    seen = seen || {};
+    if (seen[id]) return 0;
+    seen[id] = true;
+    var f = p.fatherId ? byId[p.fatherId] : null, m = p.motherId ? byId[p.motherId] : null;
+    var fw = f ? blockW(f.id, seen) : 0, mw = m ? blockW(m.id, seen) : 0;
+    return fw + (f && m ? COUPLE_GAP : 0) + mw;
+  }
+  function blockW(id, seen){ return Math.max(groupW(shownSiblings(id).length), parentsW(id, seen)); }
+  function layoutUp(personId){
+    var w = parentsW(personId);
+    return { width: Math.max(CARD_W, w), expanded: w > 0 };
+  }
+  // personId'nin anne-babasını (ve onların kardeşlerini) centerX etrafına, gen satırına yerleştirir /
+  // Places personId's parents (and their siblings) around centerX on row gen
   function placeUp(personId, centerX, gen){
-    var up = layoutUp(personId);
-    if (!up.expanded) return;
+    var p = byId[personId];
+    var pw = parentsW(personId);
+    if (!pw) return;
     if (gen < minGen) minGen = gen;
-    var totalW = up.fatherW + (up.father && up.mother ? COUPLE_GAP : 0) + up.motherW;
-    var startX = centerX - totalW / 2;
-    if (up.father){
-      if (visited[up.father.id]){ startX += up.fatherW + COUPLE_GAP; }
-      else {
-        visited[up.father.id] = true;
-        var fCenterX = startX + up.fatherW / 2;
-        positions[up.father.id] = { x: fCenterX - CARD_W / 2, y: gen * (CARD_H + V_GAP) };
-        generations[up.father.id] = gen;
-        placeUp(up.father.id, fCenterX, gen - 1);
-        startX += up.fatherW + COUPLE_GAP;
-      }
-    }
-    if (up.mother){
-      if (visited[up.mother.id]) return;
-      visited[up.mother.id] = true;
-      var mCenterX = startX + up.motherW / 2;
-      positions[up.mother.id] = { x: mCenterX - CARD_W / 2, y: gen * (CARD_H + V_GAP) };
-      generations[up.mother.id] = gen;
-      placeUp(up.mother.id, mCenterX, gen - 1);
-    }
+    var f = p.fatherId ? byId[p.fatherId] : null, m = p.motherId ? byId[p.motherId] : null;
+    var fw = f ? blockW(f.id) : 0, mw = m ? blockW(m.id) : 0;
+    var start = centerX - pw / 2;
+    if (f) placeBlock(f.id, start, fw, gen, 'left');
+    if (m) placeBlock(m.id, start + fw + (f ? COUPLE_GAP : 0), mw, gen, 'right');
+  }
+  function placeBlock(id, bx, W, gen, side){
+    if (visited[id]) return;
+    var sibs = shownSiblings(id).filter(function(s){ return !visited[s.id]; });
+    var G = groupW(sibs.length);
+    var gs = bx + (W - G) / 2;
+    var order = side === 'left' ? sibs.concat([byId[id]]) : [byId[id]].concat(sibs);
+    order.forEach(function(q, i){
+      visited[q.id] = true;
+      positions[q.id] = { x: gs + i * (CARD_W + H_GAP), y: gen * (CARD_H + V_GAP) };
+      generations[q.id] = gen;
+    });
+    placeUp(id, gs + G / 2, gen - 1);
   }
 
   // ================= RENDER =================
@@ -1609,7 +1648,9 @@
       card.dataset.id = p.id;
       var upOpen = !!expandedUp[p.id];
       var downOpen = !!(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId]));
-      var showUpToggle = hasParents(p);
+      // Anne-babası başka bir dal üzerinden zaten görünüyorsa (ör. kardeş kartı) ok gösterilmez /
+      // No arrow if the parents are already shown through another branch (e.g. a sibling's card)
+      var showUpToggle = hasParents(p) && (!!expandedUp[p.id] || !((p.fatherId && positions[p.fatherId]) || (p.motherId && positions[p.motherId])));
       // ═══ DÜZELTİLDİ ═══ Aşağı ok yalnızca kök kuşak ve altında anlamlı (atalarda çocuklar zaten
       // yukarı dal üzerinden görünüyor); eski eşte de gösterilmez. /
       // ═══ FIXED ═══ The down arrow only makes sense at the root generation and below (ancestors'
@@ -1633,8 +1674,23 @@
           e.stopPropagation();
           if (toggleEl.dataset.toggle === 'up'){ expandedUp[p.id] = !expandedUp[p.id]; }
           else { expandedDown[p.id] = !(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId])); if (p.spouseId) delete expandedDown[p.spouseId]; }
-          save();
+          // ═══ DÜZELTİLDİ ═══ Bir dal açılıp kapanınca ağaç yeniden diziliyor; önceden görünüm yerinde
+          // kaldığı için kalan kartlar ekranın dışına kayıyor ve "her şey kapandı" gibi görünüyordu.
+          // Artık tıklanan kart ekranda AYNI yerde kalıyor. Açık/kapalı durumu yalnızca bu tarayıcıda
+          // tutulduğu için buluta gereksiz kayıt da yapılmıyor. /
+          // ═══ FIXED ═══ Toggling a branch reflows the tree; the view used to stay put, so the remaining
+          // cards slid off-screen and it looked like "everything closed". The clicked card now stays at
+          // the SAME spot on screen. Open/closed state is per-browser, so no needless cloud write either.
+          var before = card.getBoundingClientRect();
+          saveLocalCache();
           render();
+          var after = document.querySelector('.person-card[data-id="' + p.id + '"]');
+          if (after){
+            var r2 = after.getBoundingClientRect();
+            pan.x += before.left - r2.left;
+            pan.y += before.top - r2.top;
+            updateTransform();
+          }
           return;
         }
         // ═══ YENİ ═══ Yönetici avatara tıklarsa doğrudan fotoğraf seçer; ziyaretçi için profil açılır. /
@@ -2039,10 +2095,21 @@
     if (!isAdmin){ openAuthModal(function(){ openAddSiblingForm(refId); }); return; }
     var ref = byId[refId];
     if (!ref) return;
+    // ═══ YENİ ═══ Anne-babası kayıtlı olmayan birine (ör. Ebru Hanım) de kardeş eklenebilsin diye,
+    // izin alınarak adsız bir anne-baba kaydı oluşturulur; adları sonradan düzenlenebilir. /
+    // ═══ NEW ═══ So a sibling can be added even when no parents are recorded (e.g. Ebru), an
+    // unnamed parent pair is created with permission; their names can be edited later.
     if (!ref.fatherId && !ref.motherId){
-      showToast('⚠️ Önce bu kişinin babasını veya annesini ekleyin — kardeş bağlantısı ortak ebeveyne dayanır.');
-      return;
+      if (!confirm(ref.name + ' için anne-baba kaydı yok. Kardeşler ortak anne-babaya bağlanır.\n\nAdsız bir anne-baba kaydı oluşturulsun mu? (Adlarını sonra "Düzenle" ile girebilirsiniz.)')) return;
+      var fid = uid(), mid = uid();
+      var first = (ref.name || '').split(' ')[0];
+      persons.push(P({ id:fid, name:'Baba (adı girilmedi)', gender:'M', nameOnly:true, kin: first + ' ve kardeşlerinin babası', spouseId: mid }));
+      persons.push(P({ id:mid, name:'Anne (adı girilmedi)', gender:'F', nameOnly:true, kin: first + ' ve kardeşlerinin annesi', spouseId: fid }));
+      ref.fatherId = fid; ref.motherId = mid;
+      rebuildIndex();
+      save();
     }
+    expandedUp[refId] = true;
     pendingAutoLink = { mode: 'sibling', refId: refId };
     document.getElementById('parentChoiceTitle').textContent = (ref.name || '') + ' — Kardeş Ekle';
     document.getElementById('parentChoiceLabel').textContent = (ref.name || 'Bu kişi') + '\u2019nin kardeşi ağaçta zaten var mı? İsim yazarak arayın.';
@@ -2089,6 +2156,7 @@
       var sib = byId[selectedId], ref = byId[link.refId];
       sib.fatherId = ref.fatherId || sib.fatherId;
       sib.motherId = ref.motherId || sib.motherId;
+      expandedUp[link.refId] = true;
     } else if (link.mode === 'formerSpouse'){
       addFormerSpouseLink(link.refId, selectedId);
     } else {
@@ -2400,6 +2468,7 @@
       if (pendingAutoLink.mode === 'sibling'){
         record.fatherId = ref.fatherId || record.fatherId;
         record.motherId = ref.motherId || record.motherId;
+        expandedUp[pendingAutoLink.refId] = true;
       } else if (pendingAutoLink.mode === 'formerSpouse'){
         addFormerSpouseLink(pendingAutoLink.refId, id);
       } else {
@@ -2418,6 +2487,13 @@
 
   // ================= PANELS =================
   function showPanel(panelId){
+    // ═══ DÜZELTİLDİ ═══ Yeni panel açılırken diğer yan paneller kapanıyor. Önceden profil paneli
+    // açıkken "Kardeş Ekle / Baba Ekle / Anne Ekle / Eski Eş Ekle" tıklanınca seçim paneli profilin
+    // ARKASINDA açılıyor, hiçbir şey olmuyormuş gibi görünüyordu. /
+    // ═══ FIXED ═══ Other side panels close when a new one opens. Previously, clicking "Add Sibling /
+    // Father / Mother / Former Spouse" from the profile opened the choice panel BEHIND the profile,
+    // so it looked like nothing happened.
+    document.querySelectorAll('.side-panel.open').forEach(function(el){ if (el.id !== panelId) el.classList.remove('open'); });
     document.getElementById('overlayScrim').classList.add('open');
     document.getElementById(panelId).classList.add('open');
   }
