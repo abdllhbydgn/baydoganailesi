@@ -175,8 +175,9 @@
 
   /* ---------- PERSON CARD ---------- */
   .person-card{
-    position:absolute; width:180px; border-radius:var(--radius-md); background:var(--card); border:1px solid var(--line);
-    box-shadow:var(--shadow-soft); padding:16px 14px 13px; text-align:center; cursor:pointer;
+    position:absolute; width:180px; height:222px; border-radius:var(--radius-md); background:var(--card); border:1px solid var(--line);
+    box-shadow:var(--shadow-soft); padding:18px 12px 14px; text-align:center; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center;
     transition:transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease, border-color .18s ease, opacity .3s ease;
     user-select:none; opacity:1; transform:scale(1) translateY(0);
   }
@@ -196,16 +197,43 @@
   }
   .person-card.is-root::before{ height:5px; }
   .pc-avatar{
-    width:60px; height:60px; border-radius:50%; margin:4px auto 10px; overflow:hidden; position:relative;
+    width:60px; height:60px; border-radius:50%; margin:2px auto 8px; overflow:hidden; position:relative; flex-shrink:0;
     background:var(--gender-tint, var(--accent-tint, #E7EBF2)); display:flex; align-items:center; justify-content:center;
     border:3px solid var(--card); box-shadow:0 0 0 2px var(--gender-color, var(--accent, var(--wine))), var(--shadow-soft);
   }
   .pc-avatar img{ width:100%; height:100%; object-fit:cover; }
   .pc-avatar .pc-initial{ font-family:var(--ff-display); font-weight:600; font-size:21px; color:var(--gender-color, var(--accent, var(--wine))); }
-  .pc-name{ font-size:13.5px; font-weight:800; line-height:1.3; color:var(--ink); }
-  .pc-dates{ font-size:10.5px; color:var(--ink-soft); font-weight:600; letter-spacing:.01em; margin-top:3px; }
-  .pc-deceased{ opacity:.6; filter:grayscale(0.35); }
-  .pc-deceased-tag{ font-size:9px; color:var(--ink-soft); font-style:italic; }
+  .pc-kin{ font-size:9.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; line-height:1.3; color:var(--accent, var(--wine)); margin-bottom:3px; }
+  .pc-name{ font-family:var(--ff-display); font-size:15px; font-weight:600; line-height:1.2; color:var(--ink); }
+  .pc-dates{ font-size:11.5px; color:#5F574F; font-weight:600; letter-spacing:.01em; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .pc-place{ font-size:10.5px; color:var(--ink-soft); font-weight:500; margin-top:2px; }
+  /* ═══ YENİ ═══ Vefat edenler artık soluk gösterilmiyor; kartın altında belirgin bir etiket var. /
+     ═══ NEW ═══ Deceased people are no longer faded; a clear tag sits at the bottom of the card. */
+  .pc-deceased .pc-avatar{ box-shadow:0 0 0 2px #B3A796, var(--shadow-soft); }
+  .pc-deceased-tag{
+    margin-top:auto; padding:3px 10px; border-radius:999px; background:#EAE2D5; color:#5A5047;
+    font-size:10px; font-weight:700; letter-spacing:.02em; white-space:nowrap;
+  }
+  /* ═══ YENİ ═══ Belgede yalnızca anne/baba adı olarak geçen kişiler — kesikli çerçeve. /
+     ═══ NEW ═══ People who only appear as a parent's name in the document — dashed frame. */
+  .person-card.pc-nameonly{ background:rgba(255,255,255,0.55); border:1.5px dashed #BDB2A2; box-shadow:none; }
+  .person-card.pc-nameonly::before{ display:none; }
+  .person-card.pc-nameonly .pc-name{ font-weight:500; color:#4A433C; }
+  .person-card.pc-nameonly .pc-avatar{ background:#F1EBE1; box-shadow:0 0 0 2px #C4B6A2; }
+  .person-card.pc-nameonly .pc-avatar .pc-initial{ color:#8C8276; }
+  .person-card.pc-former{ border-style:dashed; }
+  /* ═══ YENİ ═══ Yönetici, avatara tıklayarak doğrudan fotoğraf ekleyebilir. /
+     ═══ NEW ═══ Admin can add a photo straight from the avatar. */
+  .pc-photo-badge{
+    position:absolute; right:-4px; bottom:-4px; width:22px; height:22px; border-radius:50%; background:var(--card);
+    border:1px solid var(--line); display:none; align-items:center; justify-content:center; color:var(--ink-soft); box-shadow:var(--shadow-soft);
+  }
+  .pc-photo-badge svg{ width:12px; height:12px; }
+  body.is-admin .pc-photo-badge{ display:flex; }
+  .pc-avatar-wrap{ position:relative; width:60px; height:60px; margin:2px auto 8px; flex-shrink:0; }
+  .pc-avatar-wrap .pc-avatar{ margin:0; }
+  body.is-admin .pc-avatar-wrap{ cursor:copy; }
+  .former-line{ stroke-dasharray:6 5; }
 
   /* ═══ YENİ ═══ Kartın üstünde/altında beliren, ebeveyn/çocuk dallarını açıp kapatan yuvarlak
      düğmeler — sadece ilgili veri varsa görünür. Tıklama kartın kendisini AÇMAZ (profil için ayrı). /
@@ -373,6 +401,15 @@
     <div class="search-results" id="searchResults"></div>
   </div>
   <div class="toolbar-actions">
+    <!-- ═══ YENİ ═══ Tüm kuşakları tek tıkla açıp kapatma -->
+    <button class="tbtn" onclick="expandAllBranches()" title="Tüm kuşakları aç">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="7 8 12 3 17 8"/><polyline points="7 16 12 21 17 16"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      <span class="lbl-text">Tümünü Aç</span>
+    </button>
+    <button class="tbtn" onclick="collapseAllBranches()" title="Başlangıç görünümüne dön">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="7 3 12 8 17 3"/><polyline points="7 21 12 16 17 21"/><line x1="4" y1="12" x2="20" y2="12"/></svg>
+      <span class="lbl-text">Tümünü Kapat</span>
+    </button>
     <button class="tbtn primary admin-only-el" onclick="openAddPersonForm()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <span class="lbl-text">Kişi Ekle</span>
@@ -447,7 +484,10 @@
   <span class="side-legend-item"><i style="background:#33465C"></i>Baba Tarafı</span>
   <span class="side-legend-item"><i style="background:#A15750"></i>Anne Tarafı</span>
   <span class="side-legend-item"><i style="background:#B9862F"></i>Doğrudan Soy</span>
+  <span class="side-legend-item"><i style="background:#4E6B5A"></i>Ebru Hanım'ın Ailesi</span>
+  <span class="side-legend-item"><i style="background:transparent; border:1.5px dashed #A99A86; border-radius:3px;"></i>Yalnızca adı biliniyor</span>
 </div>
+<input type="file" accept="image/*" id="quickPhotoInput" style="display:none;">
 
 <div class="overlay-scrim" id="overlayScrim" onclick="closeSidePanel()"></div>
 
@@ -744,7 +784,8 @@
 
   // ================= CONFIG =================
   var STORAGE_KEY = 'baydogan_soyagaci_v1';
-  var CARD_W = 180, CARD_H = 168, COUPLE_GAP = 16, H_GAP = 46, V_GAP = 130, ROW_TOP_PAD = 130, SIDE_PAD = 80;
+  var FORMER_GAP = 70;
+  var CARD_W = 180, CARD_H = 222, COUPLE_GAP = 16, H_GAP = 46, V_GAP = 130, ROW_TOP_PAD = 130, SIDE_PAD = 80;
   var PHOTO_MAX_DIM = 320; // px — uploaded photos are downsized before being stored
   var COLORS = ['#33465C','#8C3B34','#5C6B49','#B9862F','#A15750','#6B2C27','#3E5A73','#6B4A34'];
 
@@ -757,13 +798,85 @@
   var pendingPhoto = '';   // base64 photo staged in the edit form
 
   // ================= SEED DATA (first run only) =================
+  // ═══ YENİ (26.09.2026) ═══ e-Devlet Alt-Üst Soy Belgesi'ndeki (10.09.2026) tüm kişiler. Ek alanlar:
+  // kin (Abdullah'a göre yakınlık), birthPlace (doğum yeri), registry (nüfusa kayıtlı köy),
+  // birthApprox (kayıttaki gün/ay tahmini — sadece yıl gösterilir), deceased (vefat etmiş ama ölüm
+  // tarihi kayıtlı değil), nameOnly (belgede yalnızca anne/baba adı olarak geçiyor). Kimlik ve kütük
+  // numaraları bilerek eklenmedi. /
+  // ═══ NEW (Sep 26, 2026) ═══ Everyone from the e-Devlet ancestry document. Extra fields: kin,
+  // birthPlace, registry, birthApprox, deceased, nameOnly. ID and registry numbers deliberately omitted.
+  var SEED_VERSION = 2;
+  function P(o){
+    return Object.assign({ gender:'', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'', motherId:'', spouseId:'', formerSpouseIds:[], kin:'', birthPlace:'', registry:'', birthApprox:false, deceased:false, nameOnly:false, seedV:SEED_VERSION }, o);
+  }
   function seedData(){
-    var p1 = { id:'abdullah', name:'Abdullah Baydoğan', gender:'M', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'', motherId:'', spouseId:'ebru' };
-    var p2 = { id:'ebru', name:'Ebru Baydoğan', gender:'F', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'', motherId:'', spouseId:'abdullah' };
-    var p3 = { id:'ozan', name:'Ozan Baydoğan', gender:'M', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'abdullah', motherId:'ebru', spouseId:'' };
-    var p4 = { id:'emirhan', name:'Emirhan Baydoğan', gender:'M', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'abdullah', motherId:'ebru', spouseId:'' };
-    var p5 = { id:'omurlena', name:'Ömür Lena Baydoğan', gender:'F', birthDate:'', deathDate:'', photo:'', bio:'', fatherId:'abdullah', motherId:'ebru', spouseId:'' };
-    return [p1,p2,p3,p4,p5];
+    return [
+      // — Doğrudan soy / direct line —
+      P({ id:'abdullah', name:'Abdullah Baydoğan', gender:'M', birthDate:'1974-07-21', birthPlace:'Adana', registry:'Taşlıyayla', kin:'Kamil ve Fidan’ın oğlu', fatherId:'kamil', motherId:'fidan', spouseId:'ebru', formerSpouseIds:['sevtap'] }),
+      P({ id:'ebru', name:'Ebru Baydoğan', gender:'F', kin:'Eşi', spouseId:'abdullah' }),
+      P({ id:'sevtap', name:'Sevtap', gender:'F', kin:'Ozan ve Emirhan’ın annesi', formerSpouseIds:['abdullah'], bio:'Belgede Ozan ve Emirhan’ın anne adı olarak geçiyor.' }),
+      P({ id:'ozan', name:'Ozan Baydoğan', gender:'M', birthDate:'1998-10-03', birthPlace:'Bakırköy', registry:'Taşlıyayla', kin:'Oğlu', fatherId:'abdullah', motherId:'sevtap' }),
+      P({ id:'emirhan', name:'Emirhan Baydoğan', gender:'M', birthDate:'2013-08-12', birthPlace:'Büyükçekmece', registry:'Taşlıyayla', kin:'Oğlu', fatherId:'abdullah', motherId:'sevtap' }),
+      P({ id:'omurlena', name:'Ömür Lena Baydoğan', gender:'F', birthDate:'2024-01-22', birthPlace:'Küçükçekmece', registry:'Taşlıyayla', kin:'Kızı', fatherId:'abdullah', motherId:'ebru' }),
+      // — Baba tarafı / father's side (Baydoğan) —
+      P({ id:'kamil', name:'Kamil Baydoğan', gender:'M', birthDate:'1954-01-01', birthApprox:true, birthPlace:'İringil', registry:'Taşlıyayla', kin:'Baba', fatherId:'abdullah1909', motherId:'aysefatma' }),
+      P({ id:'abdullah1909', name:'Abdullah Baydoğan', gender:'M', birthDate:'1909-07-01', birthApprox:true, deathDate:'1965-02-01', birthPlace:'İringil', registry:'Taşlıyayla', kin:'Dede', fatherId:'hacimemet', motherId:'aysehan', spouseId:'aysefatma' }),
+      P({ id:'aysefatma', name:'Ayşe Fatma Baydoğan', gender:'F', birthDate:'1909-07-01', birthApprox:true, deathDate:'2004-08-16', birthPlace:'Canuşağı', registry:'Taşlıyayla', kin:'Babaanne', fatherId:'mustafa', motherId:'ayse', spouseId:'abdullah1909' }),
+      P({ id:'hacimemet', name:'Hacı Memet', gender:'M', birthDate:'1869-07-01', birthApprox:true, deathDate:'1911-04-18', birthPlace:'İringil', registry:'Taşlıyayla', kin:'Dedenin babası', fatherId:'bekir', motherId:'halime', spouseId:'aysehan' }),
+      P({ id:'aysehan', name:'Ayşehan Baydoğan', gender:'F', birthDate:'1881-07-01', birthApprox:true, deceased:true, birthPlace:'İringil', registry:'Taşlıyayla', kin:'Dedenin annesi', fatherId:'alisadik', motherId:'selvi', spouseId:'hacimemet', bio:'Kayıtta ölümü sonradan tespit edilmiş; tarih kayıtlı değil.' }),
+      P({ id:'mustafa', name:'Mustafa', gender:'M', birthDate:'1885-07-01', birthApprox:true, deceased:true, birthPlace:'Çermik', registry:'Canuşağı', kin:'Babaannenin babası', fatherId:'hasan1', motherId:'sultan', spouseId:'ayse' }),
+      P({ id:'ayse', name:'Ayşe', gender:'F', birthDate:'1874-07-01', birthApprox:true, deceased:true, birthPlace:'İringil', registry:'Canuşağı', kin:'Babaannenin annesi', fatherId:'ahmet', motherId:'fatma1', spouseId:'mustafa' }),
+      P({ id:'halime', name:'Halime', gender:'F', birthDate:'1847-07-01', birthApprox:true, deceased:true, birthPlace:'Yukarıelgük', registry:'Taşlıyayla', kin:'Dedenin babaannesi', fatherId:'mustafa2', motherId:'emine1', spouseId:'bekir', bio:'Ailenin bilinen en eski kaydı.' }),
+      P({ id:'bekir', name:'Bekir', gender:'M', nameOnly:true, deceased:true, kin:'Hacı Memet’in babası', spouseId:'halime' }),
+      P({ id:'mustafa2', name:'Mustafa', gender:'M', nameOnly:true, deceased:true, kin:'Halime’nin babası', spouseId:'emine1' }),
+      P({ id:'emine1', name:'Emine', gender:'F', nameOnly:true, deceased:true, kin:'Halime’nin annesi', spouseId:'mustafa2' }),
+      P({ id:'alisadik', name:'Ali Sadık', gender:'M', nameOnly:true, deceased:true, kin:'Ayşehan’ın babası', spouseId:'selvi' }),
+      P({ id:'selvi', name:'Selvi', gender:'F', nameOnly:true, deceased:true, kin:'Ayşehan’ın annesi', spouseId:'alisadik' }),
+      P({ id:'hasan1', name:'Hasan', gender:'M', nameOnly:true, deceased:true, kin:'Mustafa’nın babası', spouseId:'sultan' }),
+      P({ id:'sultan', name:'Sultan', gender:'F', nameOnly:true, deceased:true, kin:'Mustafa’nın annesi', spouseId:'hasan1' }),
+      P({ id:'ahmet', name:'Ahmet', gender:'M', nameOnly:true, deceased:true, kin:'Ayşe’nin babası', spouseId:'fatma1' }),
+      P({ id:'fatma1', name:'Fatma', gender:'F', nameOnly:true, deceased:true, kin:'Ayşe’nin annesi', spouseId:'ahmet' }),
+      // — Anne tarafı / mother's side (Altunbaş) —
+      P({ id:'fidan', name:'Fidan Altunbaş', gender:'F', birthDate:'1954-08-10', deathDate:'2016-10-06', birthPlace:'Canuşağı', registry:'Canuşağı', kin:'Anne', fatherId:'memet', motherId:'fethiye' }),
+      P({ id:'memet', name:'Memet Altunbaş', gender:'M', birthDate:'1927-09-19', deathDate:'1996-02-01', birthPlace:'Canuşağı', registry:'Canuşağı', kin:'Dede', fatherId:'fetihahmet', motherId:'gullu', spouseId:'fethiye' }),
+      P({ id:'fethiye', name:'Fethiye Altunbaş', gender:'F', birthDate:'1931-07-01', birthApprox:true, deathDate:'2001-12-21', birthPlace:'Canuşağı', registry:'Canuşağı', kin:'Anneanne', fatherId:'memet2', motherId:'fatma2', spouseId:'memet' }),
+      P({ id:'fetihahmet', name:'Fetih Ahmet Altunbaş', gender:'M', birthDate:'1901-07-01', birthApprox:true, deathDate:'1983-03-28', birthPlace:'Canuşağı', registry:'Canuşağı', kin:'Dedenin babası', fatherId:'dursun', motherId:'firdevs', spouseId:'gullu' }),
+      P({ id:'gullu', name:'Güllü', gender:'F', nameOnly:true, deceased:true, kin:'Dedenin annesi', spouseId:'fetihahmet' }),
+      P({ id:'memet2', name:'Memet', gender:'M', nameOnly:true, deceased:true, kin:'Anneannenin babası', spouseId:'fatma2' }),
+      P({ id:'fatma2', name:'Fatma', gender:'F', nameOnly:true, deceased:true, kin:'Anneannenin annesi', spouseId:'memet2' }),
+      P({ id:'dursun', name:'Dursun Altunbaş', gender:'M', birthDate:'1863-07-01', birthApprox:true, deathDate:'1956-10-15', birthPlace:'Canuşağı', registry:'Canuşağı', kin:'Dedenin dedesi', fatherId:'ibrahim', motherId:'gullu2', spouseId:'firdevs' }),
+      P({ id:'firdevs', name:'Firdevs', gender:'F', birthDate:'1864-07-01', birthApprox:true, deceased:true, birthPlace:'Canuşağı', registry:'Canuşağı', kin:'Dedenin babaannesi', fatherId:'hasan2', motherId:'emine2', spouseId:'dursun' }),
+      P({ id:'ibrahim', name:'İbrahim', gender:'M', nameOnly:true, deceased:true, kin:'Dursun’un babası', spouseId:'gullu2' }),
+      P({ id:'gullu2', name:'Güllü', gender:'F', nameOnly:true, deceased:true, kin:'Dursun’un annesi', spouseId:'ibrahim' }),
+      P({ id:'hasan2', name:'Hasan', gender:'M', nameOnly:true, deceased:true, kin:'Firdevs’in babası', spouseId:'emine2' }),
+      P({ id:'emine2', name:'Emine', gender:'F', nameOnly:true, deceased:true, kin:'Firdevs’in annesi', spouseId:'hasan2' })
+    ];
+  }
+
+  // ═══ YENİ ═══ Mevcut kayıtlara belgedeki kişileri ekler (bir kez). Olmayan kişiler eklenir; var
+  // olanların yalnızca BOŞ alanları doldurulur (fotoğraf ve yazılan notlar korunur). Ozan ve
+  // Emirhan'ın annesi belgeye göre Sevtap olarak düzeltilir. Değişiklik olduysa true döner. /
+  // ═══ NEW ═══ Merges the document's people into existing records (once). Missing people are added;
+  // existing ones only get their EMPTY fields filled (photos and notes are kept). Ozan's and
+  // Emirhan's mother is corrected to Sevtap per the document. Returns true if anything changed.
+  function needsSeedMerge(list){
+    return !list.some(function(p){ return (p.seedV || 0) >= SEED_VERSION; });
+  }
+  function mergeSeedInto(list){
+    var map = {};
+    list.forEach(function(p){ map[p.id] = p; });
+    seedData().forEach(function(s){
+      var e = map[s.id];
+      if (!e){ list.push(s); map[s.id] = s; return; }
+      Object.keys(s).forEach(function(k){
+        var cur = e[k];
+        var empty = cur === undefined || cur === null || cur === '' || (Array.isArray(cur) && cur.length === 0);
+        if (empty) e[k] = s[k];
+      });
+      if ((s.id === 'ozan' || s.id === 'emirhan') && e.motherId === 'ebru') e.motherId = 'sevtap';
+      e.seedV = SEED_VERSION;
+    });
+    return list;
   }
 
   // ================= PERSISTENCE =================
@@ -783,9 +896,15 @@
       if (raw){
         var data = JSON.parse(raw);
         persons = Array.isArray(data.persons) ? data.persons : [];
-        if (data.expandedUp && typeof data.expandedUp === 'object') expandedUp = data.expandedUp;
-        if (data.expandedDown && typeof data.expandedDown === 'object') expandedDown = data.expandedDown;
-        if (Object.keys(expandedUp).length || Object.keys(expandedDown).length) _rootDefaultsInitialized = true;
+        // ═══ YENİ ═══ Eski sürümden kalan açık/kapalı durumları yok sayılır — yeni başlangıç görünümü
+        // (anne-baba açık) herkeste bir kez uygulanır. /
+        // ═══ NEW ═══ Open/closed states from the old version are ignored — the new default view
+        // (parents open) applies once for everyone.
+        if (data.viewV === 2){
+          if (data.expandedUp && typeof data.expandedUp === 'object') expandedUp = data.expandedUp;
+          if (data.expandedDown && typeof data.expandedDown === 'object') expandedDown = data.expandedDown;
+          if (Object.keys(expandedUp).length || Object.keys(expandedDown).length) _rootDefaultsInitialized = true;
+        }
       }
     } catch(e){
       console.error('Soyağacı yerel önbelleği okunamadı:', e);
@@ -798,6 +917,7 @@
     //    1) The local cache is shown instantly first (so the screen isn't empty while waiting on
     //       the cloud response).
     loadLocalCache();
+    if (persons.length > 0 && needsSeedMerge(persons)){ mergeSeedInto(persons); rebuildIndex(); }
     if (!fbReady){
       // Bulut yoksa (Firebase yüklenemedi), eski (sadece yerel) davranış aynen sürer /
       // No cloud (Firebase failed to load) — falls back to the old (local-only) behavior as before
@@ -815,10 +935,18 @@
         // Bulutta veri var — artık ana kaynak bu /
         // Cloud already has data — this is now the source of truth
         persons = fromCloud;
+        // ═══ YENİ ═══ Buluttaki veride belgedeki kişiler henüz yoksa eklenir; yönetici girişliyse
+        // hemen buluta yazılır, değilse giriş yapılınca yazılır (ziyaretçiler yine de görür). /
+        // ═══ NEW ═══ If the cloud data doesn't have the document's people yet, they're merged in;
+        // written to the cloud right away for an admin, otherwise on login (visitors still see them).
+        var merged = false;
+        if (needsSeedMerge(persons)){ mergeSeedInto(persons); merged = true; }
         rebuildIndex();
         saveLocalCache();
         render();
+        if (merged){ if (isAdmin) syncAllPersonsToCloud(); else _pendingCloudMigration = true; }
       } else if (!_cloudSynced && persons.length > 0){
+        if (needsSeedMerge(persons)){ mergeSeedInto(persons); rebuildIndex(); render(); }
         // ═══ YENİ ═══ Bulut boş ama bu tarayıcıda daha önce (localStorage'da) girilmiş veri var —
         // bu, sayfanın İLK KEZ buluta bağlandığı an: mevcut yerel veri buluta taşınır. Ancak bu
         // yazma işlemi için yönetici girişi gerekir (Firestore kuralları); giriş henüz yapılmadıysa
@@ -842,7 +970,7 @@
   }
   function saveLocalCache(){
     try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ persons: persons, expandedUp: expandedUp, expandedDown: expandedDown, savedAt: new Date().toISOString() }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ persons: persons, expandedUp: expandedUp, expandedDown: expandedDown, viewV: 2, savedAt: new Date().toISOString() }));
     } catch(e){
       console.error('Soyağacı verisi yerel olarak kaydedilemedi:', e);
       showToast('⚠️ Kaydetme başarısız — tarayıcı depolama alanı dolu olabilir.');
@@ -927,10 +1055,11 @@
   // themself, their spouse, or their descendants). Feeds the tree's card colors and the profile's
   // lineage lists.
   var LINEAGE_REF_ID = 'abdullah';
-  var LINEAGE_COLORS = { paternal: '#33465C', maternal: '#A15750', direct: '#B9862F', none: null };
+  var LINEAGE_COLORS = { paternal: '#33465C', maternal: '#A15750', direct: '#B9862F', inlaw: '#4E6B5A', none: null };
   var LINEAGE_LABELS = {
     paternal: { tr: 'Baba Tarafı', en: "Father's Side", ar: 'جهة الأب' },
     maternal: { tr: 'Anne Tarafı', en: "Mother's Side", ar: 'جهة الأم' },
+    inlaw: { tr: 'Eşinin Ailesi', en: "Spouse's Family", ar: 'عائلة الزوجة' },
     direct: { tr: 'Doğrudan Soy', en: 'Direct Line', ar: 'النسل المباشر' }
   };
   var lineageSide = {}; // id -> 'paternal' | 'maternal' | 'direct' | undefined
@@ -986,6 +1115,21 @@
     }
     floodSide(ref.fatherId, 'paternal');
     floodSide(ref.motherId, 'maternal');
+    // ═══ YENİ ═══ Eski eş(ler) doğrudan soy rengini alır; eşin anne-babası ve ataları "Eşinin
+    // Ailesi" (yeşil) olarak işaretlenir. /
+    // ═══ NEW ═══ Former spouse(s) get the direct-line color; the spouse's parents and ancestors are
+    // marked as "Spouse's Family" (green).
+    getFormerSpouses(ref.id).forEach(function(fs){ if (!lineageSide[fs.id]) lineageSide[fs.id] = 'direct'; });
+    var sp = ref.spouseId ? byId[ref.spouseId] : null;
+    if (sp){
+      (function markUp(id){
+        var q = byId[id];
+        if (!q) return;
+        [q.fatherId, q.motherId].forEach(function(pid){
+          if (pid && byId[pid] && !lineageSide[pid]){ lineageSide[pid] = 'inlaw'; markUp(pid); }
+        });
+      })(sp.id);
+    }
   }
 
   // ═══ Belirli bir kişinin BABA hattını (kendisinden yukarı) veya ANNE hattını sırayla listeler /
@@ -1040,7 +1184,21 @@
   function lifeSpan(p){
     if (!p.birthDate && !p.deathDate) return '';
     var b = fmtYear(p.birthDate) || '?';
-    return p.deathDate ? (b + ' – ' + fmtYear(p.deathDate)) : (b + ' –');
+    return p.deathDate ? (b + ' – ' + fmtYear(p.deathDate)) : ('d. ' + b);
+  }
+  var MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  function fmtLong(d){
+    if (!d) return '';
+    var a = d.split('-');
+    if (a.length !== 3) return d;
+    return parseInt(a[2], 10) + ' ' + MONTHS_TR[parseInt(a[1], 10) - 1] + ' ' + a[0];
+  }
+  // Ömür (yıl) — gün/ay tahminiyse "yaklaşık" / Lifespan in years — "approx." if day/month estimated
+  function ageAtDeath(p){
+    if (!p.birthDate || !p.deathDate) return '';
+    var b = p.birthDate.split('-').map(Number), d = p.deathDate.split('-').map(Number);
+    if (p.birthApprox) return 'yaklaşık ' + (d[0] - b[0]) + ' yıl';
+    return (d[0] - b[0] - ((d[1] < b[1] || (d[1] === b[1] && d[2] < b[2])) ? 1 : 0)) + ' yıl';
   }
 
   // ================= LAYOUT =================
@@ -1060,8 +1218,22 @@
   function ensureRootDefaults(){
     if (_rootDefaultsInitialized) return;
     _rootDefaultsInitialized = true;
-    if (byId[ROOT_ID]) expandedDown[ROOT_ID] = true;
+    if (byId[ROOT_ID]){ expandedDown[ROOT_ID] = true; expandedUp[ROOT_ID] = true; }
   }
+  // ═══ YENİ ═══ Tümünü aç / Tümünü kapat (başlangıç görünümüne dön) /
+  // ═══ NEW ═══ Expand all / Collapse all (back to the default view)
+  window.expandAllBranches = function(){
+    persons.forEach(function(p){
+      if (hasParents(p)) expandedUp[p.id] = true;
+      if (hasAnyChildren(p)) expandedDown[p.id] = true;
+    });
+    saveLocalCache(); render(); setTimeout(resetView, 30);
+  };
+  window.collapseAllBranches = function(){
+    expandedUp = {}; expandedDown = {}; _rootDefaultsInitialized = false;
+    saveLocalCache(); render(); setTimeout(resetView, 30);
+  };
+  function isDead(p){ return !!(p && (p.deathDate || p.deceased)); }
   function hasParents(p){ return !!(p && (p.fatherId || p.motherId)); }
   function hasAnyChildren(p){ return !!(p && getChildren(p.id).length); }
 
@@ -1113,7 +1285,30 @@
       placeUp(rootSpouse.id, upStartX + upRootWidth + COUPLE_GAP + upSpouseWidth / 2, -1);
     }
 
-    return { width: totalWidth };
+    // ═══ YENİ ═══ Kök kişinin eski eş(ler)i, kök kartının SOLUNA yerleştirilir; o evlilikten olan
+    // çocuklar da bu çiftin altından bağlanır (bkz. render). /
+    // ═══ NEW ═══ The root's former spouse(s) are placed to the LEFT of the root card; children of
+    // that marriage connect from under that pair (see render).
+    var rootPos = positions[root.id];
+    if (rootPos){
+      getFormerSpouses(root.id).forEach(function(fs, i){
+        if (positions[fs.id]) return;
+        positions[fs.id] = { x: rootPos.x - (i + 1) * (CARD_W + FORMER_GAP), y: rootPos.y };
+        generations[fs.id] = 0;
+        visited[fs.id] = true;
+      });
+    }
+
+    // ═══ YENİ ═══ Sola taşan kartlar olursa her şey sağa kaydırılır. /
+    // ═══ NEW ═══ If any card spills to the left, everything shifts right.
+    var minX = Infinity, maxX = -Infinity;
+    Object.keys(positions).forEach(function(id){
+      minX = Math.min(minX, positions[id].x);
+      maxX = Math.max(maxX, positions[id].x + CARD_W);
+    });
+    if (!isFinite(minX)) return { width: totalWidth };
+    Object.keys(positions).forEach(function(id){ positions[id].x -= minX; });
+    return { width: Math.max(maxX - minX, CARD_W) };
   }
 
   // ---------------- AŞAĞI (çocuklar) / DOWNWARD (children) ----------------
@@ -1122,6 +1317,18 @@
     var unitWidth = spouseId ? (CARD_W * 2 + COUPLE_GAP) : CARD_W;
     var expand = !!(expandedDown[personId] || (spouseId && expandedDown[spouseId]));
     var children = expand ? getCoupleChildren(personId, spouseId) : [];
+    // ═══ YENİ ═══ Çocuklar doğum tarihine göre sıralanır; eski eşten olan çocuklar (eski eş solda
+    // durduğu için) önce gelir. /
+    // ═══ NEW ═══ Children are sorted by birth date; children of a former spouse come first (since
+    // the former spouse sits on the left).
+    var formerIds = {};
+    getFormerSpouses(personId).forEach(function(f){ formerIds[f.id] = true; });
+    children = children.slice().sort(function(a, b){
+      var fa = (formerIds[a.motherId] || formerIds[a.fatherId]) ? 0 : 1;
+      var fb = (formerIds[b.motherId] || formerIds[b.fatherId]) ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      return String(a.birthDate || '9999').localeCompare(String(b.birthDate || '9999'));
+    });
     var childLayouts = [], childrenWidth = 0;
     children.forEach(function(child){
       if (visited[child.id]) return;
@@ -1257,7 +1464,7 @@
       if (spouse && positions[spouse.id] && p.id < spouse.id){
         var sp1 = positions[p.id], sp2 = positions[spouse.id];
         var y = sp1.y + CARD_H/2;
-        var x1 = sp1.x + CARD_W + shiftX, x2 = sp2.x + shiftX;
+        var x1 = Math.min(sp1.x, sp2.x) + CARD_W + shiftX, x2 = Math.max(sp1.x, sp2.x) + shiftX;
         var lineEl = document.createElementNS('http://www.w3.org/2000/svg','line');
         lineEl.setAttribute('x1', x1); lineEl.setAttribute('y1', y);
         lineEl.setAttribute('x2', x2); lineEl.setAttribute('y2', y);
@@ -1276,13 +1483,52 @@
       if (handled[key]) return;
       handled[key] = true;
       var children = getCoupleChildren(p.id, spouse ? spouse.id : null).filter(function(c){ return positions[c.id]; });
+      // ═══ YENİ ═══ Görünen bir eski eşten olan çocuklar burada değil, aşağıda o çiftin altından
+      // bağlanır. / Children of a visible former spouse are connected below, from under that pair.
+      children = children.filter(function(c){
+        var other = c.fatherId === p.id ? c.motherId : (c.motherId === p.id ? c.fatherId : (spouse && c.fatherId === spouse.id ? c.motherId : c.fatherId));
+        var formers = getFormerSpouses(p.id).concat(spouse ? getFormerSpouses(spouse.id) : []);
+        return !formers.some(function(f){ return f.id === other && positions[f.id]; });
+      });
       if (children.length === 0) return;
 
-      var midX = spouse && positions[spouse.id]
-        ? (pos.x + CARD_W + (positions[spouse.id].x - (pos.x + CARD_W)) / 2) + shiftX
+      var sPos = spouse && positions[spouse.id];
+      var midX = sPos
+        ? ((Math.min(pos.x, sPos.x) + CARD_W + Math.max(pos.x, sPos.x)) / 2) + shiftX
         : (pos.x + CARD_W/2) + shiftX;
-      var midY = pos.y + CARD_H + shiftX*0; // shiftX*0 no-op, keep y untouched by horizontal shift
-      var busY = midY + V_GAP * 0.42;
+      // Eş varsa çizgi evlilik çizgisinden başlar / With a spouse, the line starts at the marriage line
+      var midY = sPos ? pos.y + CARD_H / 2 : pos.y + CARD_H;
+      var busY = pos.y + CARD_H + V_GAP * 0.42;
+      drawChildCurves(midX, midY, busY, children);
+    });
+
+    // ═══ YENİ ═══ Eski eş çiftleri: kesikli evlilik çizgisi + o evlilikten olan çocuklar. /
+    // ═══ NEW ═══ Former-spouse pairs: dashed marriage line + the children of that marriage.
+    persons.forEach(function(p){
+      var pos = positions[p.id];
+      if (!pos) return;
+      getFormerSpouses(p.id).forEach(function(fs){
+        var fPos = positions[fs.id];
+        if (!fPos || p.id > fs.id) return;
+        var leftPos = pos.x < fPos.x ? pos : fPos, rightPos = pos.x < fPos.x ? fPos : pos;
+        var y = leftPos.y + CARD_H / 2;
+        var ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1', leftPos.x + CARD_W + shiftX); ln.setAttribute('y1', y);
+        ln.setAttribute('x2', rightPos.x + shiftX); ln.setAttribute('y2', y);
+        ln.setAttribute('stroke', '#6B4A34'); ln.setAttribute('stroke-width', '2'); ln.setAttribute('class', 'former-line');
+        svg.appendChild(ln);
+        var kids = persons.filter(function(c){
+          return positions[c.id] && ((c.fatherId === p.id && c.motherId === fs.id) || (c.fatherId === fs.id && c.motherId === p.id));
+        });
+        if (!kids.length) return;
+        var midX = (leftPos.x + CARD_W + rightPos.x) / 2 + shiftX;
+        var midY = y;
+        var busY = leftPos.y + CARD_H + V_GAP * 0.42;
+        drawChildCurves(midX, midY, busY, kids);
+      });
+    });
+
+    function drawChildCurves(midX, midY, busY, children){
 
       // stub down from the couple/parent to the bus line
       var stub = document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -1292,15 +1538,9 @@
 
       children.forEach(function(child){
         var cpos = positions[child.id];
-        var cSpouse = getSpouse(child.id);
-        var childCenterX;
-        if (cSpouse && positions[cSpouse.id]){
-          var a = cpos.x, b = positions[cSpouse.id].x;
-          childCenterX = (Math.min(a,b) + CARD_W + Math.max(a,b)) / 2 + shiftX;
-          if (child.id > cSpouse.id) childCenterX = (a + CARD_W/2) + shiftX; // fallback, avoid double
-        } else {
-          childCenterX = cpos.x + CARD_W/2 + shiftX;
-        }
+        // ═══ DÜZELTİLDİ ═══ Çizgi her zaman çocuğun KENDİ kartına iner (eşinin ortasına değil). /
+        // ═══ FIXED ═══ The line always lands on the child's OWN card (not the middle of the couple).
+        var childCenterX = cpos.x + CARD_W/2 + shiftX;
         var childTopY = cpos.y;
         var path = document.createElementNS('http://www.w3.org/2000/svg','path');
         var c1y = busY + (childTopY - busY) * 0.35;
@@ -1311,7 +1551,7 @@
         path.setAttribute('stroke', '#6B4A34'); path.setAttribute('stroke-width','2'); path.setAttribute('fill','none'); path.setAttribute('opacity','0.85');
         svg.appendChild(path);
       });
-    });
+    }
 
     // ---- person cards ----
     persons.forEach(function(p){
@@ -1326,7 +1566,8 @@
       var isRoot = (p.id === ROOT_ID) || (byId[ROOT_ID] && p.id === byId[ROOT_ID].spouseId);
       var isNew = !previouslyVisible[p.id];
       var card = document.createElement('div');
-      card.className = 'person-card' + (p.deathDate ? ' pc-deceased' : '') + (isRoot ? ' is-root' : '') + (isNew ? ' card-enter' : '');
+      var isFormer = getFormerSpouses(ROOT_ID).some(function(f){ return f.id === p.id; });
+      card.className = 'person-card' + (isDead(p) ? ' pc-deceased' : '') + (p.nameOnly ? ' pc-nameonly' : '') + (isFormer ? ' pc-former' : '') + (isRoot ? ' is-root' : '') + (isNew ? ' card-enter' : '');
       card.style.left = (pos.x + shiftX) + 'px';
       card.style.top = pos.y + 'px';
       card.style.setProperty('--accent', accent);
@@ -1344,15 +1585,21 @@
       var upOpen = !!expandedUp[p.id];
       var downOpen = !!(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId]));
       var showUpToggle = hasParents(p);
-      var showDownToggle = hasAnyChildren(p);
+      // ═══ DÜZELTİLDİ ═══ Aşağı ok yalnızca kök kuşak ve altında anlamlı (atalarda çocuklar zaten
+      // yukarı dal üzerinden görünüyor); eski eşte de gösterilmez. /
+      // ═══ FIXED ═══ The down arrow only makes sense at the root generation and below (ancestors'
+      // children are already shown via the upward branch); not shown on a former spouse either.
+      var showDownToggle = hasAnyChildren(p) && (generations[p.id] || 0) >= 0 && !isFormer;
       card.innerHTML =
         (showUpToggle ? '<div class="pc-toggle pc-toggle-up'+(upOpen?' open':'')+'" data-toggle="up" title="'+(upOpen?'Ebeveynleri Gizle':'Ebeveynleri Göster')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg></div>' : '') +
-        '<div class="pc-avatar">' +
+        '<div class="pc-avatar-wrap" data-photo="1" title="'+(isAdmin ? 'Fotoğraf eklemek için tıklayın' : '')+'"><div class="pc-avatar">' +
           (p.photo ? '<img src="'+p.photo+'" alt="">' : '<span class="pc-initial">'+initial(p.name)+'</span>') +
-        '</div>' +
+        '</div><span class="pc-photo-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div>' +
+        (p.kin ? '<div class="pc-kin">'+escapeHtml(p.kin)+'</div>' : '') +
         '<div class="pc-name">'+escapeHtml(p.name)+'</div>' +
-        '<div class="pc-dates">'+ (lifeSpan(p) || '&nbsp;') +'</div>' +
-        (p.deathDate ? '<div class="pc-deceased-tag">Aramızdan ayrıldı</div>' : '') +
+        '<div class="pc-dates">'+ (p.nameOnly ? 'Yalnızca adı biliniyor' : (lifeSpan(p) || '&nbsp;')) +'</div>' +
+        (p.birthPlace ? '<div class="pc-place">'+escapeHtml(p.birthPlace)+'</div>' : '') +
+        (isDead(p) ? '<div class="pc-deceased-tag">Aramızdan ayrıldı</div>' : '') +
         (showDownToggle ? '<div class="pc-toggle pc-toggle-down'+(downOpen?' open':'')+'" data-toggle="down" title="'+(downOpen?'Çocukları Gizle':'Çocukları Göster')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></div>' : '');
       card.addEventListener('click', function(e){
         var toggleEl = e.target.closest('.pc-toggle');
@@ -1362,6 +1609,14 @@
           else { expandedDown[p.id] = !(expandedDown[p.id] || (p.spouseId && expandedDown[p.spouseId])); if (p.spouseId) delete expandedDown[p.spouseId]; }
           save();
           render();
+          return;
+        }
+        // ═══ YENİ ═══ Yönetici avatara tıklarsa doğrudan fotoğraf seçer; ziyaretçi için profil açılır. /
+        // ═══ NEW ═══ An admin clicking the avatar picks a photo directly; for visitors the profile opens.
+        if (isAdmin && e.target.closest('[data-photo]')){
+          e.stopPropagation();
+          quickPhotoTargetId = p.id;
+          document.getElementById('quickPhotoInput').click();
           return;
         }
         openProfile(p.id);
@@ -1442,9 +1697,19 @@
     var canvas = document.getElementById('treeCanvas');
     var rect = vp.getBoundingClientRect();
     var cw = parseFloat(canvas.style.width) || rect.width;
-    zoom = Math.min(1, rect.width / (cw + 100));
+    var ch = parseFloat(canvas.style.height) || rect.height;
+    // ═══ YENİ ═══ Ağaç hem genişliğe hem yüksekliğe sığdırılır (en az %30). /
+    // ═══ NEW ═══ The tree is fitted to both width and height (minimum 30%).
+    var topbarH = 80;
+    zoom = Math.min(1, rect.width / (cw + 100), (rect.height - topbarH - 30) / (ch + 20));
     if (!isFinite(zoom) || zoom <= 0) zoom = 1;
+    zoom = Math.max(0.3, zoom);
     pan.x = (rect.width - cw * zoom) / 2;
+    if (ch * zoom <= rect.height - topbarH - 30){
+      pan.y = topbarH + (rect.height - topbarH - ch * zoom) / 2;
+      updateTransform();
+      return;
+    }
     // ═══ DÜZELTİLDİ ═══ Artık her zaman tuvalin en üstünü değil, KÖK çiftini (siz ve eşinizi)
     // dikeyde ortalıyor — ebeveynler yukarı açıldığında bile "Sıfırla" sizi bulur. /
     // ═══ FIXED ═══ Now always vertically centers on the ROOT couple (you and your spouse) instead
@@ -1588,14 +1853,28 @@
     html += '<div class="profile-avatar" style="--accent:'+accent+'; --accent-tint:'+tint(accent)+'; --gender-color:'+genderColorProfile+'; --gender-tint:'+tint(genderColorProfile)+'">' +
       (p.photo ? '<img src="'+p.photo+'">' : '<span class="pc-initial">'+initial(p.name)+'</span>') + '</div>';
     html += '<div><div class="profile-name">'+escapeHtml(p.name)+'</div>' +
-      '<div class="profile-role">'+(lifeSpan(p) || (p.gender==='M'?'Erkek':p.gender==='F'?'Kadın':'Aile Bireyi'))+'</div>' +
+      '<div class="profile-role" style="--accent:'+accent+'">'+escapeHtml(p.kin || lifeSpan(p) || (p.gender==='M'?'Erkek':p.gender==='F'?'Kadın':'Aile Bireyi'))+'</div>' +
       (side && LINEAGE_LABELS[side] ? '<div class="profile-side-tag" style="--accent:'+accent+'">'+LINEAGE_LABELS[side].tr+'</div>' : '') +
+      (isDead(p) ? ' <div class="pc-deceased-tag" style="display:inline-block; margin-top:6px;">Aramızdan ayrıldı</div>' : '') +
       '</div>';
     html += '</div>';
 
-    html += fieldBlock('Doğum Tarihi', fmtDate(p.birthDate));
+    // ═══ YENİ ═══ Daha ayrıntılı profil: uzun tarih, doğum yeri, vefat, ömür, nüfus kaydı. /
+    // ═══ NEW ═══ More detailed profile: long dates, birthplace, death, lifespan, civil registry.
+    if (p.nameOnly){
+      html += fieldBlock('Kayıt', 'Belgede yalnızca anne ya da baba adı olarak geçiyor; doğum ve ölüm bilgisi yok.');
+    } else {
+      var birthTxt = p.birthDate ? (p.birthApprox ? (fmtYear(p.birthDate) + ' (gün ve ay tahmini)') : fmtLong(p.birthDate)) : '';
+      html += fieldBlock('Doğum', birthTxt);
+      if (p.birthPlace) html += fieldBlock('Doğum Yeri', p.birthPlace);
+      if (isDead(p)){
+        html += fieldBlock('Vefat', p.deathDate ? fmtLong(p.deathDate) : 'Aramızdan ayrıldı (tarih kayıtlı değil)');
+        var age = ageAtDeath(p);
+        if (age) html += fieldBlock('Ömrü', age);
+      }
+      if (p.registry) html += fieldBlock('Nüfus Kaydı', 'Elazığ · Sivrice · ' + p.registry + ' Köyü');
+    }
     if (p.generation) html += fieldBlock('Nesil (elle ayarlandı)', p.generation + '. Nesil');
-    html += fieldBlock('Ölüm Tarihi', fmtDate(p.deathDate));
     html += fieldBlock('Biyografi / Notlar', p.bio);
 
     var linkChips = '';
@@ -1965,6 +2244,25 @@
       renderPhotoPreview(dataUrl);
     });
   });
+  // ═══ YENİ ═══ Karttaki avatardan hızlı fotoğraf ekleme (yalnızca yönetici). Fotoğraf küçültülüp
+  // kişinin kaydına yazılır ve buluta kaydedilir. /
+  // ═══ NEW ═══ Quick photo upload from a card's avatar (admin only). The photo is downsized, written
+  // to the person's record and saved to the cloud.
+  var quickPhotoTargetId = null;
+  document.getElementById('quickPhotoInput').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    var id = quickPhotoTargetId;
+    e.target.value = '';
+    quickPhotoTargetId = null;
+    if (!file || !id || !byId[id] || !/^image\//.test(file.type)) return;
+    if (!isAdmin){ openAuthModal(null); return; }
+    resizeImage(file, PHOTO_MAX_DIM, function(dataUrl){
+      byId[id].photo = dataUrl;
+      save();
+      render();
+      showToast('📷 "' + byId[id].name + '" için fotoğraf kaydedildi.');
+    });
+  });
   function resizeImage(file, maxDim, cb){
     var reader = new FileReader();
     reader.onload = function(e){
@@ -2020,6 +2318,16 @@
       }
     }
 
+    // ═══ YENİ ═══ Formda olmayan ek alanlar (yakınlık, doğum yeri, nüfus kaydı, vefat bilgisi vb.)
+    // düzenlemede korunur. / Extra fields not in the form are kept when editing.
+    if (existingIdx >= 0){
+      var prev = persons[existingIdx];
+      ['kin','birthPlace','registry','birthApprox','deceased','nameOnly','seedV'].forEach(function(k){
+        if (prev[k] !== undefined) record[k] = prev[k];
+      });
+      if (prev.birthApprox && prev.birthDate !== birthDate) record.birthApprox = false;
+      if (record.nameOnly && (birthDate || deathDate)) record.nameOnly = false;
+    }
     if (existingIdx >= 0) persons[existingIdx] = record; else persons.push(record);
     rebuildIndex();
 
