@@ -109,6 +109,8 @@
     font-family:var(--ff-body); font-size:14px; margin-bottom:10px; background:var(--paper);
   }
   .auth-box input:focus{ outline:none; border-color:var(--wine); }
+  .auth-remember{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-soft); margin:-2px 0 10px; cursor:pointer; user-select:none; }
+  .auth-remember input{ width:auto; margin:0; }
   .auth-forgot{ display:block; text-align:right; font-size:12.5px; color:var(--wine); text-decoration:none; margin:-4px 0 14px; cursor:pointer; background:none; border:none; padding:0; font-family:var(--ff-body); width:100%; }
   .auth-forgot:hover{ text-decoration:underline; }
   .auth-error{ font-size:12.5px; color:#B3261E; margin:-4px 0 12px; display:none; }
@@ -399,6 +401,7 @@
     <p>Kişi ekleyip düzenleyebilmek için aile hesabıyla giriş yapın. Sadece görüntülemek için girişe gerek yok.</p>
     <input type="email" id="authEmail" placeholder="E-posta" autocomplete="username">
     <input type="password" id="authPass" placeholder="Şifre" autocomplete="current-password">
+    <label class="auth-remember"><input type="checkbox" id="authRemember" checked> Beni Hatırla</label>
     <button type="button" class="auth-forgot" id="authForgotBtn" onclick="sendPasswordReset()">Şifremi Unuttum</button>
     <div class="auth-error" id="authError"></div>
     <div class="auth-info" id="authInfo"></div>
@@ -659,7 +662,14 @@
     if (!email || !pass){ errEl.textContent = 'Lütfen e-posta ve şifre girin.'; errEl.classList.add('show'); return; }
     document.getElementById('authInfo').classList.remove('show');
     btn.disabled = true; btn.textContent = 'Giriş yapılıyor...';
-    auth.signInWithEmailAndPassword(email, pass).then(function(){
+    // ═══ YENİ ═══ "Beni Hatırla" — bkz. index.html'deki aynı mantık (ana sayfayla tutarlı olsun
+    // diye buraya da eklendi).
+    var rememberEl = document.getElementById('authRemember');
+    var remember = !rememberEl || rememberEl.checked;
+    var persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+    auth.setPersistence(persistence).then(function(){
+      return auth.signInWithEmailAndPassword(email, pass);
+    }).then(function(){
       btn.disabled = false; btn.textContent = 'Giriş Yap';
       closeAuthModal();
       if (pendingAfterLogin){ var fn = pendingAfterLogin; pendingAfterLogin = null; fn(); }
@@ -856,7 +866,16 @@
       }
       batch.commit().catch(function(err){
         console.error('Soyağacı buluta kaydedilemedi:', err);
-        showToast('⚠️ Değişiklik buluta kaydedilemedi — internet bağlantınızı kontrol edin.');
+        // ═══ YENİ ═══ 'permission-denied' ayrı gösteriliyor — bunun sebebi internet değil, Firebase
+        // Console'daki Firestore kurallarında 'soyagaci_persons' koleksiyonu için izin eksikliğidir. /
+        // ═══ NEW ═══ 'permission-denied' is called out separately — the cause isn't the internet
+        // connection, it's a missing Firestore rule for the 'soyagaci_persons' collection in the
+        // Firebase Console.
+        if (err && err.code === 'permission-denied'){
+          showToast('🔒 Buluta kaydedilemedi: Firestore kurallarında "soyagaci_persons" için izin eksik. Firebase Console’dan kuralları güncelleyin.');
+        } else {
+          showToast('⚠️ Değişiklik buluta kaydedilemedi — internet bağlantınızı kontrol edin.');
+        }
       });
     } catch(e){ console.error(e); }
   }
