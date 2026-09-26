@@ -181,7 +181,8 @@
     .tl-year{ margin-top:6px; font-size:32px; }
   }
   .heritage-cta{ margin-top:64px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px; padding:30px 36px; border-radius:var(--radius-lg); background:var(--navy-900); color:var(--ivory); position:relative; overflow:hidden; }
-  .heritage-cta::after{ content:''; position:absolute; right:-80px; top:-80px; width:260px; height:260px; border-radius:50%; border:1px solid rgba(217,194,154,0.18); }
+  .heritage-cta::after{ content:''; position:absolute; right:-80px; top:-80px; width:260px; height:260px; border-radius:50%; border:1px solid rgba(217,194,154,0.18); pointer-events:none; }
+  .heritage-cta > *{ position:relative; z-index:1; }
   .heritage-cta h3{ font-size:30px; color:var(--ivory); }
   .heritage-cta p{ margin:6px 0 0; color:rgba(247,243,236,0.7); font-size:15px; }
 
