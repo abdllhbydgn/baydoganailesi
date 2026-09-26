@@ -1144,10 +1144,16 @@
     pendingAfterLogin = onSuccess || null;
     document.getElementById('authError').classList.remove('show');
     document.getElementById('authInfo').classList.remove('show');
-    document.getElementById('authEmail').value = '';
+    // ═══ YENİ ═══ "Beni Hatırla": son kullanılan e-posta hazır gelir, imleç doğrudan şifreye gider
+    // (şifreyi tarayıcının kendi şifre yöneticisi doldurur — güvenlik için sitede saklanmaz). /
+    // ═══ NEW ═══ "Remember me": the last e-mail is prefilled and focus goes straight to the password
+    // (the browser's own password manager fills it — never stored by the site, for security).
+    var savedEmail = '';
+    try { savedEmail = localStorage.getItem('baydogan_admin_email') || ''; } catch(e){}
+    document.getElementById('authEmail').value = savedEmail;
     document.getElementById('authPass').value = '';
     document.getElementById('authScrim').classList.add('open');
-    setTimeout(function(){ document.getElementById('authEmail').focus(); }, 50);
+    setTimeout(function(){ document.getElementById(savedEmail ? 'authPass' : 'authEmail').focus(); }, 50);
   };
   window.closeAuthModal = function(){
     document.getElementById('authScrim').classList.remove('open');
@@ -1177,6 +1183,7 @@
       return auth.signInWithEmailAndPassword(email, pass);
     }).then(function(){
       btn.disabled = false; btn.textContent = 'Giriş Yap';
+      try { if (remember) localStorage.setItem('baydogan_admin_email', email); else localStorage.removeItem('baydogan_admin_email'); } catch(e){}
       closeAuthModal();
       if (pendingAfterLogin){ var fn = pendingAfterLogin; pendingAfterLogin = null; fn(); }
     }).catch(function(err){
@@ -1235,7 +1242,16 @@
 
   var adminToggle = document.getElementById('adminToggle');
   var adminToggleLabel = document.getElementById('adminToggleLabel');
+  // ═══ YENİ ═══ Sayfa açılırken Firebase kayıtlı oturumu birkaç yüz milisaniyede geri yükler.
+  // Bu sürede düğmeye basılırsa artık giriş kutusu hemen açılmıyor; oturum kontrolü bitince
+  // (zaten girişliyse) hiçbir şey sormadan yönetici moduna geçiliyor. /
+  // ═══ NEW ═══ On page load Firebase restores the saved session within a few hundred ms. A click
+  // during that window no longer pops the login box; once the check finishes (and you're already
+  // signed in) admin mode simply turns on without asking.
+  var authResolved = false, loginWanted = false;
+  if (fbReady) adminToggleLabel.textContent = 'Oturum kontrol ediliyor…';
   adminToggle.addEventListener('click', function(){
+    if (fbReady && !authResolved){ loginWanted = true; return; }
     if (isAdmin){
       if (confirm('Yönetici oturumunu kapatmak istiyor musunuz?')) auth.signOut();
     } else {
@@ -1245,6 +1261,11 @@
   if (fbReady){
     auth.onAuthStateChanged(function(user){
       isAdmin = !!user;
+      if (!authResolved){
+        authResolved = true;
+        if (loginWanted && !isAdmin) setTimeout(function(){ openAuthModal(null); }, 0);
+        loginWanted = false;
+      }
       adminToggle.classList.toggle('is-admin', isAdmin);
       adminToggleLabel.textContent = isAdmin ? 'Yönetici (Çıkış)' : 'Yönetici Girişi';
       // ═══ YENİ ═══ Yükleme kutuları (dropzone) artık SADECE admin girişi yapılmışken görünür —
