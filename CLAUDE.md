@@ -11,4 +11,5 @@ Dosyalarda büyük base64 resimler (logo) var — **tamamını okuma**; `grep -n
 
 ## Harita
 - `index.html`: CSS `<style>` (sonunda "CANLI TEMA" bloğu: aurora, altın tozları, ikonlar, sayaçlar, kilit panelleri). JS: `FAMILY` (aile kartları), `watchPhotos` (yalnız yöneticide fotoğraf aboneliği), `renderAllPhotos`, `uploadPhoto`, `onAuthStateChanged`, `showFamilyNotice` (soyağacı uyarısı), `liveTheme`.
+- Hız: Firestore çevrimdışı önbelleği (`enablePersistence`) açık, büyük aile fotoğrafı `baydogan_hero_cache` ile anında; çıkışta ikisi de temizlenir.
 - `soyagaci.html`: `seedData()` (e-Devlet kayıtlarından kişiler), `load()` (yerel önbellek + bulut), `startTree`/`lockTree`/`#treeGate` (erişim kilidi), `render()`.
