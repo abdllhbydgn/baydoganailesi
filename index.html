@@ -440,8 +440,22 @@
   .family-card.loading .family-card-content::after{ content:'Aile fotoğrafı yükleniyor…'; font-size:13px; color:var(--gold-soft); letter-spacing:.04em; }
   .family-card.loading .family-card-content::before{ content:''; width:28px; height:28px; border-radius:50%; border:3px solid rgba(217,194,154,.25); border-top-color:var(--gold-soft); animation:heroSpin 1s linear infinite; order:3; }
   @keyframes heroSpin{ to{ transform:rotate(360deg); } }
+  /* Aile Girişi / Çıkış Yap — üst menüde */
+  .nav-links .nav-auth{ display:flex; align-items:center; margin-left:8px; }
+  .nav-links .admin-toggle{ position:static; min-height:38px; padding:0 14px; font-size:13px; letter-spacing:.02em; background:transparent; color:inherit; border:1px solid rgba(217,194,154,.45); box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; color:rgba(247,243,236,.9); }
+  .nav.scrolled .nav-links .admin-toggle{ color:var(--ink); border-color:var(--line-strong); }
+  .nav-links .admin-toggle:hover{ border-color:var(--gold); color:var(--gold-light); }
+  .nav.scrolled .nav-links .admin-toggle:hover{ color:var(--gold-deep); }
+  .nav-links .admin-toggle.is-admin, .nav.scrolled .nav-links .admin-toggle.is-admin{ background:var(--forest); border-color:var(--forest); color:#fff; }
+  @media (max-width:900px){ .nav-links .nav-auth{ margin:14px 0 0; justify-content:center; } .nav-links .admin-toggle{ width:100%; justify-content:center; min-height:46px; font-size:15px; color:var(--ivory); } }
+  .nav-links a, .nav-links .admin-toggle{ white-space:nowrap; }
+  @media (min-width:901px) and (max-width:1280px){
+    .nav-links a{ padding:10px 10px; font-size:13.5px; }
+    .nav-links a .ni{ display:none; }
+    .nav-links .nav-auth{ margin-left:4px; }
+  }
   /* Alt bilgi: sabit düğmeler (Aile Girişi, Yukarı) içeriğin üstüne binmesin */
-  footer{ padding-bottom:112px; }
+  footer{ padding-bottom:84px; }
   .footer-bottom{ row-gap:14px; }
   .footer-seals{ flex-wrap:wrap; }
   .footer-photo{ width:128px; height:92px; border-radius:16px; border:2px solid rgba(217,194,154,.55); box-shadow:0 10px 26px rgba(0,0,0,.35); flex-shrink:0; cursor:pointer; transition:transform .4s var(--ease), box-shadow .4s; }
@@ -1390,6 +1404,8 @@
 
   var adminToggle = document.getElementById('adminToggle');
   var adminToggleLabel = document.getElementById('adminToggleLabel');
+  // Giriş/çıkış düğmesi üst menüde durur (sayfa içeriğinin üstüne binmesin)
+  (function(){ var li = document.createElement('li'); li.className = 'nav-auth'; li.appendChild(adminToggle); document.getElementById('navLinks').appendChild(li); })();
   // ═══ YENİ ═══ Sayfa açılırken Firebase kayıtlı oturumu birkaç yüz milisaniyede geri yükler.
   // Bu sürede düğmeye basılırsa artık giriş kutusu hemen açılmıyor; oturum kontrolü bitince
   // (zaten girişliyse) hiçbir şey sormadan yönetici moduna geçiliyor. /
@@ -1421,7 +1437,10 @@
         loginWanted = false;
       }
       adminToggle.classList.toggle('is-admin', isAdmin);
-      adminToggleLabel.textContent = isAdmin ? 'Aile Girişi (Çıkış)' : 'Aile Girişi';
+      adminToggleLabel.textContent = isAdmin ? 'Çıkış Yap' : 'Aile Girişi';
+      adminToggle.title = isAdmin ? ((user && user.email) || '') + ' — oturumu kapat' : 'Aile hesabıyla giriş yap';
+      var tgIc = adminToggle.querySelector('svg');
+      if (tgIc) tgIc.innerHTML = isAdmin ? '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>' : '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>';
       // ═══ YENİ ═══ Yükleme kutuları (dropzone) artık SADECE admin girişi yapılmışken görünür —
       // giriş yapmamış ziyaretçiler yükleme arayüzünü hiç görmüyor. /
       // ═══ NEW ═══ Upload dropzones are now ONLY visible when logged in as admin — visitors who

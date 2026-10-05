@@ -857,7 +857,10 @@
         loginWanted = false;
       }
       adminToggle.classList.toggle('is-admin', isAdmin);
-      adminToggleLabel.textContent = isAdmin ? 'Aile Girişi (Çıkış)' : 'Aile Girişi';
+      adminToggleLabel.textContent = isAdmin ? 'Çıkış Yap' : 'Aile Girişi';
+      adminToggle.title = isAdmin ? ((user && user.email) || '') + ' — oturumu kapat' : 'Aile hesabıyla giriş yap';
+      var tgIc = adminToggle.querySelector('svg');
+      if (tgIc) tgIc.innerHTML = isAdmin ? '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>' : '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>';
       document.body.classList.toggle('is-admin', isAdmin);
       // ═══ YENİ ═══ Yönetici girişi yapılınca, daha önce bulut boşken bu tarayıcıda bulunup
       // buluta taşınamamış (isAdmin olmadığı için ertelenmiş) veri varsa şimdi taşınır. /
