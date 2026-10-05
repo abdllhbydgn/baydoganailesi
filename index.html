@@ -424,6 +424,22 @@
   body.is-family .fc-sub-guest, body:not(.is-family) .fc-sub-family{ display:none; }
   .fam-notice .auth-box{ text-align:center; }
   .fam-notice .auth-actions{ justify-content:center; }
+  /* Aile kartları: geniş ekranda 5'i tek sırada */
+  @media (min-width:1000px){
+    .cards{ grid-template-columns:repeat(5, minmax(0, 1fr)); gap:18px; }
+    .cards .member-card{ padding-left:16px; padding-right:16px; }
+    .cards .member-photo{ width:116px; height:116px; }
+    .cards .member-card h3{ font-size:23px; }
+  }
+  @media (min-width:640px) and (max-width:999px){ .cards{ grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+  /* Büyük aile fotoğrafı: yükleme durumu ve boşken yazı çakışması */
+  body.is-admin .family-card.empty .family-card-content{ opacity:0; }
+  .family-card.loading .hero-upload{ opacity:0 !important; pointer-events:none !important; }
+  .family-card.loading .family-card-content{ opacity:1 !important; }
+  .family-card.loading .family-card-sub{ display:none; }
+  .family-card.loading .family-card-content::after{ content:'Aile fotoğrafı yükleniyor…'; font-size:13px; color:var(--gold-soft); letter-spacing:.04em; }
+  .family-card.loading .family-card-content::before{ content:''; width:28px; height:28px; border-radius:50%; border:3px solid rgba(217,194,154,.25); border-top-color:var(--gold-soft); animation:heroSpin 1s linear infinite; order:3; }
+  @keyframes heroSpin{ to{ transform:rotate(360deg); } }
   /* Alt bilgi: sabit düğmeler (Aile Girişi, Yukarı) içeriğin üstüne binmesin */
   footer{ padding-bottom:112px; }
   .footer-bottom{ row-gap:14px; }
@@ -949,11 +965,20 @@
 
   // ================= PHOTOS: Firestore + Storage =================
   // Her fotoğraf belgesi: { id, type:'hero'|'avatar'|'album', memberId, url (base64), uploadedAt }
-  var photosUnsub = null;
+  var photosUnsub = null, photosLoaded = false;
+  // Büyük aile fotoğrafı yöneticinin tarayıcısında saklanır: sayfaya her dönüşte bulut yanıtını beklemeden anında görünür.
+  var HERO_CACHE = 'baydogan_hero_cache';
+  function heroCache(v){
+    try {
+      if (v === undefined) return localStorage.getItem(HERO_CACHE) || '';
+      if (v) localStorage.setItem(HERO_CACHE, v); else localStorage.removeItem(HERO_CACHE);
+    } catch(e){ return ''; }
+  }
   function watchPhotos(on){
     if (!fbReady) return;
     if (on && !photosUnsub){
       photosUnsub = db.collection('photos').onSnapshot(function(snap){
+        photosLoaded = true;
         photos = [];
         snap.forEach(function(doc){
           var d = doc.data(); d.id = doc.id; photos.push(d);
@@ -965,14 +990,20 @@
     } else if (!on && photosUnsub){
       photosUnsub(); photosUnsub = null;
     }
-    if (!on){ photos = []; renderAllPhotos(); }
+    if (!on){ photos = []; photosLoaded = false; heroCache(null); renderAllPhotos(); }
   }
 
   function renderAllPhotos(){
     // ---- hero ----
     var hero = photos.filter(function(p){ return p.type === 'hero'; })
       .sort(function(a,b){ return tsVal(b.uploadedAt) - tsVal(a.uploadedAt); })[0];
+    if (isAdmin && photosLoaded){
+      if (hero){ if (hero.url && hero.url.length < 1800000 && heroCache() !== hero.url) heroCache(hero.url); }
+      else heroCache(null);
+    }
+    if (!hero && isAdmin && !photosLoaded && heroCache()) hero = { id:'__cache', type:'hero', url:heroCache() };
     var heroCard = document.getElementById('familyCard');
+    heroCard.classList.toggle('loading', isAdmin && !photosLoaded && !hero);
     var existingHeroImg = heroCard.querySelector('img.uploaded');
     if (hero){
       if (!existingHeroImg){ existingHeroImg = document.createElement('img'); existingHeroImg.className = 'uploaded'; heroCard.insertBefore(existingHeroImg, heroCard.querySelector('.family-card-scrim')); }
@@ -1104,8 +1135,8 @@
   function ensureHeroDeleteBtn(hero){
     var heroCard = document.getElementById('familyCard');
     var existing = heroCard.querySelector('.hero-delete');
-    if (!isAdmin){ if (existing) existing.remove(); return; }
-    if (existing) return;
+    if (existing) existing.remove();
+    if (!isAdmin || hero.id === '__cache') return;
     var btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'slot-delete hero-delete'; btn.innerHTML = '&times;';
     btn.setAttribute('aria-label','Fotoğrafı kaldır');
