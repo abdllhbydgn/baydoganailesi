@@ -424,6 +424,20 @@
   body.is-family .fc-sub-guest, body:not(.is-family) .fc-sub-family{ display:none; }
   .fam-notice .auth-box{ text-align:center; }
   .fam-notice .auth-actions{ justify-content:center; }
+  /* Alt bilgi: sabit düğmeler (Aile Girişi, Yukarı) içeriğin üstüne binmesin */
+  footer{ padding-bottom:112px; }
+  .footer-bottom{ row-gap:14px; }
+  .footer-seals{ flex-wrap:wrap; }
+  .footer-photo{ width:128px; height:92px; border-radius:16px; border:2px solid rgba(217,194,154,.55); box-shadow:0 10px 26px rgba(0,0,0,.35); flex-shrink:0; cursor:pointer; transition:transform .4s var(--ease), box-shadow .4s; }
+  .footer-photo img{ object-position:center 22%; transition:transform .6s var(--ease); }
+  .footer-photo:hover{ transform:translateY(-3px); box-shadow:0 16px 34px rgba(0,0,0,.45), 0 0 0 1px var(--gold-soft); }
+  .footer-photo:hover img{ transform:scale(1.06); }
+  @media (max-width:640px){
+    footer{ padding-bottom:96px; }
+    .footer-brand{ flex-wrap:wrap; }
+    .footer-photo{ width:112px; height:80px; }
+    .footer-bottom{ flex-direction:column; align-items:flex-start; }
+  }
   @media (prefers-reduced-motion: reduce){
     .hero::before, .hero::after, .hero-dust, .tl-dot, .fl-ic{ animation:none !important; }
     .hero-dust{ display:none; }
@@ -976,8 +990,10 @@
     // ═══ NEW ═══ The small circular footer preview stays in sync with the big family photo
     var footerPhotoEl = document.getElementById('footerPhoto');
     if (footerPhotoEl){
+      footerPhotoEl.onclick = hero ? function(){ openLightbox([hero], 0); } : null;
+      footerPhotoEl.style.cursor = hero ? 'pointer' : 'default';
       footerPhotoEl.innerHTML = hero
-        ? '<img src="' + hero.url + '" alt="">'
+        ? '<img src="' + hero.url + '" alt="Baydoğan Ailesi">'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
     }
 
