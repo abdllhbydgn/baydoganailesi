@@ -767,6 +767,8 @@
     if (firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('BURAYA_') === -1) {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
+      // Bulut verisi bu tarayıcıda saklanır: sonraki açılışlarda fotoğraflar/soyağacı beklemeden anında gelir
+      if (db.enablePersistence) db.enablePersistence({ synchronizeTabs:true }).catch(function(e){ console.warn('Çevrimdışı önbellek açılamadı:', e && e.code); });
       auth = firebase.auth();
       fbReady = true;
     } else {
@@ -1417,7 +1419,11 @@
   adminToggle.addEventListener('click', function(){
     if (fbReady && !authResolved){ loginWanted = true; return; }
     if (isAdmin){
-      if (confirm('Yönetici oturumunu kapatmak istiyor musunuz?')) auth.signOut();
+      if (confirm('Oturumu kapatmak istiyor musunuz?')){
+        // Çıkışta bu tarayıcıdaki aile verisi kopyası da silinir
+        try { localStorage.removeItem('baydogan_hero_cache'); localStorage.removeItem('baydogan_soyagaci_v1'); } catch(e){}
+        auth.signOut().then(function(){ return db.terminate && db.terminate(); }).then(function(){ return db.clearPersistence && db.clearPersistence(); }).catch(function(){}).then(function(){ location.reload(); });
+      }
     } else {
       openAuthModal(null);
     }
