@@ -15,3 +15,8 @@ Dosyalarda büyük base64 resimler (logo) var — **tamamını okuma**; `grep -n
 - `index.html`: CSS `<style>` (sonunda "CANLI TEMA" bloğu: aurora, altın tozları, ikonlar, sayaçlar, kilit panelleri). JS: `FAMILY` (aile kartları), `watchPhotos` (yalnız yöneticide fotoğraf aboneliği), `renderAllPhotos`, `uploadPhoto`, `onAuthStateChanged`, `showFamilyNotice` (soyağacı uyarısı), `liveTheme`.
 - Hız: Firestore çevrimdışı önbelleği (`enablePersistence`) açık, büyük aile fotoğrafı `baydogan_hero_cache` ile anında; çıkışta ikisi de temizlenir.
 - `soyagaci.html`: `seedData()` (e-Devlet kayıtlarından kişiler), `load()` (yerel önbellek + bulut), `startTree`/`lockTree`/`#treeGate` (erişim kilidi), `render()`.
+
+## ÖNCE ANLAT, SONRA YAP (kullanıcı kuralı)
+- Yeni bir özellik, ayar, otomasyon, eklenti ya da kullanıcıdan bir işlem (silme, kurulum, ayar) isteyen her adımda: **önce ne yapacağını ve nedenini 2–3 kısa maddeyle anlat, kullanıcının onayını bekle, sonra yap.**
+- Kullanıcıya adım adım, tek seferde tek iş ver; gerekirse ekran görüntüsü üzerinde işaretleyerek göster.
+- Kısa ve net yaz; teknik terim kullanma.
