@@ -311,6 +311,15 @@
   .profile-actions{ display:flex; gap:10px; margin-top:26px; }
   .profile-actions .btn2{ flex:1; padding:11px; border-radius:10px; border:none; font-weight:800; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
   .btn2-edit{ background:var(--navy); color:#fff; }
+  .btn2-sib{ background:linear-gradient(135deg,#E9D9B8,#B9862F); color:#1B2433; box-shadow:0 6px 16px rgba(185,134,47,.28); }
+  .profile-actions + .profile-actions{ margin-top:10px; }
+  .pc-addsib{ position:absolute; top:8px; left:8px; z-index:3; width:30px; height:30px; border-radius:50%; border:1px solid rgba(185,134,47,.55); background:#fff; color:#8E6B38;
+    display:none; align-items:center; justify-content:center; cursor:pointer; padding:0; opacity:0; transform:scale(.85); transition:opacity .2s, transform .2s, background .2s; box-shadow:0 4px 10px rgba(0,0,0,.12); }
+  .pc-addsib svg{ width:16px; height:16px; }
+  body.is-admin .pc-addsib{ display:flex; }
+  .person-card:hover .pc-addsib, .pc-addsib:focus-visible{ opacity:1; transform:none; }
+  .pc-addsib:hover{ background:#B9862F; color:#fff; }
+  @media (hover:none){ body.is-admin .pc-addsib{ opacity:.9; transform:none; } }
   .btn2-delete{ background:var(--card); color:var(--wine); border:1.5px solid var(--wine) !important; }
 
   /* edit form */
@@ -1742,8 +1751,10 @@
           ? '<div class="pc-dates">Yalnızca adı biliniyor</div>'
           : cardFacts(p)) +
         (isDead(p) ? '<div class="pc-deceased-tag">Aramızdan ayrıldı</div>' : '') +
+        '<button type="button" class="pc-addsib admin-only-el" data-addsib="1" title="Kardeş ekle" aria-label="Kardeş ekle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M19 8v6M16 11h6"/></svg></button>' +
         (showDownToggle ? '<div class="pc-toggle pc-toggle-down'+(downOpen?' open':'')+'" data-toggle="down" title="'+(downOpen?'Çocukları Gizle':'Çocukları Göster')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></div>' : '');
       card.addEventListener('click', function(e){
+        if (e.target.closest('[data-addsib]')){ e.stopPropagation(); openAddSiblingForm(p.id); return; }
         var toggleEl = e.target.closest('.pc-toggle');
         if (toggleEl){
           e.stopPropagation();
@@ -2082,6 +2093,7 @@
         '</div></div>';
     }
 
+    html += '<div class="profile-actions admin-only-el"><button class="btn2 btn2-sib" onclick="openAddSiblingForm(\''+p.id+'\')">👥 Kardeş Ekle</button></div>';
     html += '<div class="profile-actions">' +
       '<button class="btn2 btn2-edit" onclick="openEditPersonForm(\''+p.id+'\')">✏️ Düzenle</button>' +
       '<button class="btn2 btn2-delete" onclick="deletePerson(\''+p.id+'\')">🗑️ Sil</button>' +
