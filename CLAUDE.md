@@ -1,5 +1,7 @@
 # Baydoğan Ailesi sitesi — çalışma kuralları ve harita
 
+> **Sohbet başında varsa `/home/user/ems/HAFIZA.md`'yi (ems deposu) oku; sohbet sonunda oraya kısa not ekle.**
+
 Canlı: https://abdllhbydgn.github.io/baydoganailesi/ (GitHub Pages, statik). İki dosya: `index.html` (ana sayfa) ve `soyagaci.html` (soyağacı).
 Dosyalarda büyük base64 resimler (logo) var — **tamamını okuma**; `grep -n` ile bul, uzun satırları `awk '{print substr($0,1,200)}'` ile kısaltarak oku.
 
