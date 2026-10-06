@@ -355,6 +355,19 @@
   .pp-item:hover{ background:var(--paper); }
   .pp-item .pp-avatar{ width:22px; height:22px; border-radius:50%; flex-shrink:0; background:var(--wine); color:#fff; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; overflow:hidden; }
   .pp-item .pp-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .sib-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:10px; margin-top:8px; }
+  .sib-tile{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 6px; border-radius:12px; background:#fff; border:1px solid rgba(27,36,51,.10); cursor:pointer; text-align:center; transition:transform .2s, box-shadow .2s, border-color .2s; }
+  .sib-tile:hover{ transform:translateY(-3px); box-shadow:0 10px 22px rgba(27,36,51,.12); border-color:#B9862F; }
+  .sib-tile b{ font-size:12px; line-height:1.25; color:#1B2433; }
+  .sib-tile small{ font-size:11px; color:#7A8090; }
+  .sib-av{ position:relative; width:58px; height:58px; border-radius:50%; overflow:visible; display:grid; place-items:center; background:#F1EBE1; box-shadow:0 0 0 2px #E9D9B8; }
+  .sib-av img{ width:100%; height:100%; border-radius:50%; object-fit:cover; }
+  .sib-av span{ font-family:'Cormorant Garamond', serif; font-size:24px; font-weight:700; color:#8E6B38; }
+  .sib-cam{ position:absolute; right:-4px; bottom:-4px; width:24px; height:24px; border-radius:50%; border:1px solid #E9D9B8; background:#fff; font-size:12px; cursor:pointer; padding:0; display:grid; place-items:center; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+  .sib-add{ border-style:dashed; background:#FBF6EC; }
+  .sib-add .sib-av{ background:#fff; }
+  .pp-new{ cursor:pointer; color:var(--navy, #1B2433); background:#FBF4E4; }
+  .pp-new:hover{ background:#F3E3BE; }
   .pp-empty{ padding:12px; font-size:12.5px; color:var(--ink-soft); text-align:center; }
   .photo-upload-field{
     display:flex; align-items:center; gap:14px; padding:12px; border:1.5px dashed var(--line); border-radius:12px; cursor:pointer; background:var(--card);
@@ -2071,6 +2084,18 @@
     html += '<div class="profile-field"><div class="lbl">Aile Bağlantıları</div>' +
       '<div class="profile-links">'+linkChips+'</div></div>';
 
+    // Kardeşler: fotoğraflarıyla; yönetici fotoğraf ekleyebilir / yeni kardeş ekleyebilir
+    _profileId = p.id;
+    var sibTiles = siblings.map(function(s){
+      var by = s.birthDate ? String(s.birthDate).slice(0,4) : '';
+      return '<div class="sib-tile" onclick="openProfile(\''+s.id+'\')">' +
+        '<div class="sib-av">' + (s.photo ? '<img src="'+s.photo+'" alt="">' : '<span>'+initial(s.name)+'</span>') +
+        (isAdmin ? '<button type="button" class="sib-cam" title="'+(s.photo?'Fotoğrafı değiştir':'Fotoğraf ekle')+'" onclick="event.stopPropagation(); quickPersonPhoto(\''+s.id+'\')">📷</button>' : '') +
+        '</div><b>'+escapeHtml(s.name)+'</b>' + (by ? '<small>'+by+'</small>' : '') + '</div>';
+    }).join('');
+    if (isAdmin) sibTiles += '<div class="sib-tile sib-add" onclick="openAddSiblingForm(\''+p.id+'\')"><div class="sib-av"><span>＋</span></div><b>Kardeş Ekle</b></div>';
+    if (sibTiles) html += '<div class="profile-field"><div class="lbl">👥 Kardeşler' + (siblings.length ? ' ('+siblings.length+')' : '') + '</div><div class="sib-grid">'+sibTiles+'</div></div>';
+
     // ═══ YENİ ═══ Baba tarafı soyu / Anne tarafı soyu / Tüm alt soy listeleri /
     // ═══ NEW ═══ Father's-side lineage / Mother's-side lineage / Full descendant list
     var fatherChain = getAncestorChain(p.id, 'father');
@@ -2164,7 +2189,7 @@
     var child = byId[childId];
     var roleLabel = role === 'father' ? 'Baba' : 'Anne';
     document.getElementById('parentChoiceTitle').textContent = (child ? child.name : '') + ' — ' + roleLabel + ' Ekle';
-    document.getElementById('parentChoiceLabel').textContent = (child ? child.name : 'Bu kişi') + '\u2019nin ' + roleLabel.toLowerCase() + 'sı ağaçta zaten var mı? İsim yazarak arayın.';
+    document.getElementById('parentChoiceLabel').textContent = (child ? child.name : 'Bu kişi') + '\u2019nin ' + roleLabel.toLowerCase() + 'sı ağaçta varsa ismini yazıp listeden seçin; yoksa adını yazıp “Yeni Kişi Ekle”ye basın.';
     // Döngü önlemek için: çocuğun kendisi ve tüm altsoyu listeden hariç tutulur /
     // Prevent cycles: the child themself and all their descendants are excluded from the list
     var exclude = {}; exclude[childId] = true;
@@ -2199,7 +2224,7 @@
     expandedUp[refId] = true;
     pendingAutoLink = { mode: 'sibling', refId: refId };
     document.getElementById('parentChoiceTitle').textContent = (ref.name || '') + ' — Kardeş Ekle';
-    document.getElementById('parentChoiceLabel').textContent = (ref.name || 'Bu kişi') + '\u2019nin kardeşi ağaçta zaten var mı? İsim yazarak arayın.';
+    document.getElementById('parentChoiceLabel').textContent = (ref.name || 'Bu kişi') + '\u2019nin kardeşi ağaçta varsa ismini yazıp listeden seçin; yoksa adını yazıp “Yeni Kişi Ekle”ye basın.';
     var exclude = {}; exclude[refId] = true;
     if (ref.fatherId) exclude[ref.fatherId] = true;
     if (ref.motherId) exclude[ref.motherId] = true;
@@ -2219,7 +2244,7 @@
     if (!ref) return;
     pendingAutoLink = { mode: 'formerSpouse', refId: refId };
     document.getElementById('parentChoiceTitle').textContent = (ref.name || '') + ' — Eski Eş Ekle';
-    document.getElementById('parentChoiceLabel').textContent = (ref.name || 'Bu kişi') + '\u2019nin eski eşi ağaçta zaten var mı? İsim yazarak arayın.';
+    document.getElementById('parentChoiceLabel').textContent = (ref.name || 'Bu kişi') + '\u2019nin eski eşi ağaçta varsa ismini yazıp listeden seçin; yoksa adını yazıp “Yeni Kişi Ekle”ye basın.';
     var exclude = {}; exclude[refId] = true;
     ppSetup('parentChoice', exclude);
     showPanel('parentChoicePanel');
@@ -2234,7 +2259,15 @@
   }
   window.linkExistingAsParent = function(){
     var selectedId = ppValues.parentChoice;
-    if (!selectedId){ showToast('⚠️ Lütfen isim yazıp listeden bir kişi seçin.'); return; }
+    if (!selectedId){
+      // Listeden seçilmediyse: yazılan isim ağaçta birebir varsa onu kullan, yoksa bu isimle yeni kişi formunu aç
+      var typed = (document.getElementById('parentChoice-search').value || '').trim();
+      if (!typed){ showToast('⚠️ Bir isim yazın: ağaçta varsa listeden seçin, yoksa yeni kişi olarak eklenir.'); return; }
+      var ex = ppExcludeSets.parentChoice || {}, key = typed.toLocaleLowerCase('tr');
+      var hit = persons.filter(function(x){ return !ex[x.id] && (x.name || '').trim().toLocaleLowerCase('tr') === key; });
+      if (hit.length === 1){ selectedId = hit[0].id; }
+      else { proceedToNewParentForm(typed); return; }
+    }
     if (!pendingAutoLink) return;
     var link = pendingAutoLink;
     var focusId = link.refId;
@@ -2258,10 +2291,16 @@
     showToast('✅ "'+linkedName+'" bağlandı.');
     setTimeout(function(){ focusOnPerson(focusId); openProfile(focusId); }, 60);
   };
-  window.proceedToNewParentForm = function(){
+  window.proceedToNewParentForm = function(prefillName){
     var link = pendingAutoLink; // openAddPersonForm resets pendingPhoto but not pendingAutoLink; preserve it across the panel switch
+    if (typeof prefillName !== 'string'){
+      // "Yeni Kişi Ekle"ye basıldıysa ve listeden kimse seçilmediyse, arama kutusuna yazılan isim forma taşınır
+      var sIn = document.getElementById('parentChoice-search');
+      prefillName = (!ppValues.parentChoice && sIn) ? sIn.value.trim() : '';
+    }
     openAddPersonForm();
     pendingAutoLink = link;
+    if (prefillName) document.getElementById('f-name').value = prefillName;
     var ref = link ? byId[link.refId] : null;
     if (!link){ return; }
     if (link.mode === 'sibling'){
@@ -2360,7 +2399,10 @@
       return p.name.toLowerCase().indexOf(q) !== -1;
     }).slice(0, 40);
     if (matches.length === 0){
-      dropdown.innerHTML = '<div class="pp-empty">' + (persons.length === 0 ? 'Ağaçta henüz kimse yok' : 'Eşleşen kişi yok — "Yeni Kişi Ekle" ile ekleyebilirsiniz') + '</div>';
+      var typedNow = (query || '').trim();
+      dropdown.innerHTML = (key === 'parentChoice' && typedNow)
+        ? '<div class="pp-empty pp-new" onmousedown="event.preventDefault(); proceedToNewParentForm(document.getElementById(\'parentChoice-search\').value.trim())">Ağaçta yok — <b>➕ “' + escapeHtml(typedNow) + '” adıyla yeni kişi ekle</b></div>'
+        : '<div class="pp-empty">' + (persons.length === 0 ? 'Ağaçta henüz kimse yok' : 'Eşleşen kişi yok — "Yeni Kişi Ekle" ile ekleyebilirsiniz') + '</div>';
     } else {
       dropdown.innerHTML = matches.map(function(p){
         var av = p.photo ? '<img src="'+p.photo+'">' : initial(p.name);
@@ -2441,7 +2483,12 @@
   // kişinin kaydına yazılır ve buluta kaydedilir. /
   // ═══ NEW ═══ Quick photo upload from a card's avatar (admin only). The photo is downsized, written
   // to the person's record and saved to the cloud.
-  var quickPhotoTargetId = null;
+  var quickPhotoTargetId = null, _profileId = null;
+  window.quickPersonPhoto = function(id){
+    if (!isAdmin){ openAuthModal(null); return; }
+    quickPhotoTargetId = id;
+    document.getElementById('quickPhotoInput').click();
+  };
   document.getElementById('quickPhotoInput').addEventListener('change', function(e){
     var file = e.target.files && e.target.files[0];
     var id = quickPhotoTargetId;
@@ -2453,6 +2500,9 @@
       byId[id].photo = dataUrl;
       save();
       render();
+      var pp = document.getElementById('profilePanel');
+      // Bulut kopyası kişi listesini yenileyince profil de güncel fotoğrafla yeniden çizilir
+      setTimeout(function(){ if (_profileId && byId[_profileId] && pp && pp.classList.contains('open')) openProfile(_profileId); }, 600);
       showToast('📷 "' + byId[id].name + '" için fotoğraf kaydedildi.');
     });
   });
