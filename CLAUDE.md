@@ -7,6 +7,8 @@ Dosyalarda büyük base64 resimler (logo) var — **tamamını okuma**; `grep -n
 - **Logoya dokunma.** Firestore'daki fotoğrafları ve soyağacı verisini silme/bozma.
 - Fotoğraflar ve soyağacı **yalnız aile yöneticisine** açık: `FAMILY_ADMINS = ['abdllhbydgn@gmail.com']` (iki dosyada da). Misafire: fotoğraf yerinde "Üzgünüz, aileden olmadığınız için fotoğrafları göremezsiniz", soyağacında "Bu bölüme giriş izniniz yoktur".
 - Firebase projesi `baydogan-ailesi` Arapça sitesiyle ortak (Arapça verileri `ar_*` koleksiyonlarında). Aile verisi: `photos` (base64 fotoğraf belgeleri), `soyagaci_persons`. Kurallar Firebase konsolunda; okuma da yalnız yöneticiye.
+- **Firestore kuralları tek dosya ve Arapça sitesiyle ORTAK.** Kural değişikliğinde kullanıcıya her zaman iki sitenin bloklarını (aile: `photos`, `soyagaci_persons`; Arapça: `ar_*`, bkz. arapca/tools/firestore-arapca-blok.rules) birlikte içeren TAM metni ver — yalnız birini verirsen diğeri silinir.
+- GitHub Pages yayını Actions'a bağlı; yayın takılırsa art arda yeni değişiklik gönderme (sırayı sıfırlar), githubstatus.com'u kontrol et.
 - Dal `claude/selam-pwr5q1` → commit → push → main'e PR → birleştir. Kullanıcıya Türkçe açıkla, 2–3 dk sonra Ctrl+F5 de. Commit/PR metnine model adı yazma.
 
 ## Harita
